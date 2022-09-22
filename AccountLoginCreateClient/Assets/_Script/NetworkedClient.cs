@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Net;
 using UnityEngine;
 using UnityEngine.Networking;
 
+[RequireComponent(typeof(LoginUIManager))]
 public class NetworkedClient : MonoBehaviour
 {
-
+    LoginUIManager UIManager;
     int connectionID;
     int maxConnections = 1000;
     int reliableChannelID;
@@ -20,6 +22,7 @@ public class NetworkedClient : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        UIManager = GetComponent<LoginUIManager>();
         Connect();
     }
 
@@ -70,23 +73,34 @@ public class NetworkedClient : MonoBehaviour
         {
             Debug.Log("Attempting to create connection");
 
-            NetworkTransport.Init();
+            string hostName = Dns.GetHostName();
+            string ip = Dns.GetHostByName(hostName).AddressList[1].ToString();
+            Debug.Log(ip);
 
-            ConnectionConfig config = new ConnectionConfig();
-            reliableChannelID = config.AddChannel(QosType.Reliable);
-            unreliableChannelID = config.AddChannel(QosType.Unreliable);
-            HostTopology topology = new HostTopology(config, maxConnections);
-            hostID = NetworkTransport.AddHost(topology, 0);
-            Debug.Log("Socket open.  Host ID = " + hostID);
-
-            connectionID = NetworkTransport.Connect(hostID, "10.228.68.43", socketPort, 0, out error); // server is local on network
-
-            if (error == 0)
+            if (ip != null)
             {
-                isConnected = true;
+                NetworkTransport.Init();
 
-                Debug.Log("Connected, id = " + connectionID);
+                ConnectionConfig config = new ConnectionConfig();
+                reliableChannelID = config.AddChannel(QosType.Reliable);
+                unreliableChannelID = config.AddChannel(QosType.Unreliable);
+                HostTopology topology = new HostTopology(config, maxConnections);
+                hostID = NetworkTransport.AddHost(topology, 0);
+                Debug.Log("Socket open.  Host ID = " + hostID);
 
+                connectionID = NetworkTransport.Connect(hostID, ip, socketPort, 0, out error); // server is local on network
+
+                if (error == 0)
+                {
+                    isConnected = true;
+
+                    Debug.Log("Connected, id = " + connectionID);
+
+                }
+            }
+            else
+            {
+                Debug.Log("Unable to get ip");
             }
         }
     }
@@ -105,8 +119,34 @@ public class NetworkedClient : MonoBehaviour
     private void ProcessRecievedMsg(string msg, int id)
     {
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
-    }
+        string[] data = msg.Split(',');
 
+        if (data.Length == 2)
+        {
+            //int success = int.Parse(data[1]);
+            //if(success <= -1)
+            //{
+            //    // To DO:
+            //    // Put error message here
+            //    return;
+            //}
+            bool successBool = bool.Parse(data[1]);
+
+
+            if (data[0] == "0")
+            {
+                UIManager.OnLogin(successBool);
+            }
+            else if (data[0] == "1")
+            {
+                UIManager.OnAccountCreation(successBool);
+            }
+        }
+        else
+        {
+            Debug.Log("Invaild data");
+        }
+    }
     public bool IsConnected()
     {
         return isConnected;

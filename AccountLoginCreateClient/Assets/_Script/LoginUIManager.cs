@@ -17,9 +17,12 @@ public class LoginUIManager : MonoBehaviour
     [SerializeField]
     private Button newAccountButton;
 
+    [SerializeField]
+    private FadingText fadingText;
+
     private NetworkedClient networkedClient;
     // Start is called before the first frame update
-    void Start()
+    public void Start()
     {
         networkedClient = FindObjectOfType<NetworkedClient>();
         if(networkedClient == null)
@@ -48,4 +51,31 @@ public class LoginUIManager : MonoBehaviour
         string message = string.Format("{0},{1},{2}", 1, userNameInput.text, passwordInput.text);
         networkedClient.SendMessageToHost(message);
     }
+
+    public void OnLogin(bool success)
+    {
+        if (success)
+        {
+            fadingText.ChangeText("Logging In~");
+        }
+        else
+        {
+            fadingText.ChangeText("Invaild Password or User Name");
+        }
+        fadingText.InvokeText();
+    }
+
+    public void OnAccountCreation(bool success)
+    {
+        if (success)
+        {
+            fadingText.ChangeText("Account Creation Success");
+        }
+        else
+        {
+            fadingText.ChangeText("Account Creation Failed");
+        }
+        fadingText.InvokeText();
+    }
+
 }

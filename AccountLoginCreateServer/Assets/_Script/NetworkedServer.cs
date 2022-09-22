@@ -76,29 +76,20 @@ public class NetworkedServer : MonoBehaviour
         if (data.Length == 3)
         {
             SendMessageToClient("Data recieved", id);
+            string reply = data[0];
+            string result = "-1";
             if (data[0] == "0")
             {
-                if(playerDataManager.PlayerLogin(data[1], data[2]))
-                {
-                    SendMessageToClient("Logging", id);
-                }
-                else
-                {
-                    SendMessageToClient("Invaild account/password", id);
-                }
+                //int success = playerDataManager.PlayerLogin(data[1], data[2]);
+                result = string.Format(",{0}", playerDataManager.PlayerLogin(data[1], data[2]).ToString());
             }
             else if (data[0] == "1")
             {
-                if(playerDataManager.CreateNewAccount(data[1], data[2]))
-                {
-                    SendMessageToClient("Account created", id);
-                }
-                else
-                {
-                    SendMessageToClient("Error", id);
-                }
-                        
+                //int success = playerDataManager.CreateNewAccount(data[1], data[2]);
+                result = string.Format(",{0}", playerDataManager.CreateNewAccount(data[1], data[2]).ToString());
             }
+
+            SendMessageToClient(reply + result, id);
         }
         else
         {
