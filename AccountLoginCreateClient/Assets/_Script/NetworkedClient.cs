@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Net;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -14,7 +15,7 @@ public class NetworkedClient : MonoBehaviour
     int reliableChannelID;
     int unreliableChannelID;
     int hostID;
-    int socketPort = 5491;
+    int socketPort = 32547;
     byte error;
     bool isConnected = false;
     int ourClientID;
@@ -74,7 +75,13 @@ public class NetworkedClient : MonoBehaviour
             Debug.Log("Attempting to create connection");
 
             string hostName = Dns.GetHostName();
-            string ip = Dns.GetHostByName(hostName).AddressList[1].ToString();
+            StreamReader SR = new StreamReader("IP.txt");
+            //string ip = Dns.GetHostByName(hostName).AddressList[1].ToString();
+            //string ip = "192.168.0.19";
+            //string ip = "192.168.0.1";
+            //string ip = "72.136.55.93";
+            string ip = SR.ReadLine();
+            SR.Close();
             Debug.Log(ip);
 
             if (ip != null)

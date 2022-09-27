@@ -411,6 +411,7 @@ MonoBehaviour:
   passwordInput: {fileID: 1037590907}
   loginButton: {fileID: 1422985446}
   newAccountButton: {fileID: 1917420597}
+  fadingText: {fileID: 827878584}
 --- !u!1 &255471763
 GameObject:
   m_ObjectHideFlags: 0
@@ -1127,6 +1128,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textComp: {fileID: 0}
+  fadeTime: 5
 --- !u!1 &934249210
 GameObject:
   m_ObjectHideFlags: 0
