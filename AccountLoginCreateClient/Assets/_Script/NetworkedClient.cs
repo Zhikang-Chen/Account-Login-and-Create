@@ -15,7 +15,8 @@ public class NetworkedClient : MonoBehaviour
     int reliableChannelID;
     int unreliableChannelID;
     int hostID;
-    int socketPort = 32547;
+    int socketPort;
+    //int socketPort = 36182;
     byte error;
     bool isConnected = false;
     int ourClientID;
@@ -79,8 +80,12 @@ public class NetworkedClient : MonoBehaviour
             //string ip = Dns.GetHostByName(hostName).AddressList[1].ToString();
             //string ip = "192.168.0.19";
             //string ip = "192.168.0.1";
+            //string ip = "192.168.0.10";
             //string ip = "72.136.55.93";
+            //string ip = "25.50.138.139";
             string ip = SR.ReadLine();
+
+            socketPort = int.Parse(SR.ReadLine());
             SR.Close();
             Debug.Log(ip);
 

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.IO;
 using UnityEngine.UI;
+using System.Net;
 
 [RequireComponent(typeof(PlayerDataManager))]
 public class NetworkedServer : MonoBehaviour
@@ -14,18 +15,22 @@ public class NetworkedServer : MonoBehaviour
     int reliableChannelID;
     int unreliableChannelID;
     int hostID;
-    int socketPort = 32547;
+    int socketPort = 36182;
+    //string ip = "25.50.138.139";
 
     // Start is called before the first frame update
     void Start()
     {
+        string hostName = Dns.GetHostName();
+        int lastAddress = Dns.GetHostByName(hostName).AddressList.Length - 1;
+        string ip = Dns.GetHostByName(hostName).AddressList[lastAddress].ToString();
+
         NetworkTransport.Init();
         ConnectionConfig config = new ConnectionConfig();
         reliableChannelID = config.AddChannel(QosType.Reliable);
         unreliableChannelID = config.AddChannel(QosType.Unreliable);
         HostTopology topology = new HostTopology(config, maxConnections);
         hostID = NetworkTransport.AddHost(topology, socketPort, null);
-
         playerDataManager = GetComponent<PlayerDataManager>();
     }
     // Update is called once per frame
