@@ -36,8 +36,8 @@ public class LoginUIManager : MonoBehaviour
 
     void LoginButtonPress()
     {
-        //Debug.Log(userNameInput.text);
-        //Debug.Log(passwordInput.text);
+        Debug.Log(userNameInput.text);
+        Debug.Log(passwordInput.text);
         string message = string.Format("{0},{1},{2}", 0,userNameInput.text, passwordInput.text);
 
         //Debug.Log(message);
@@ -46,8 +46,8 @@ public class LoginUIManager : MonoBehaviour
 
     void NewAccountButtonPress()
     {
-        //Debug.Log(userNameInput.text);
-        //Debug.Log(passwordInput.text);
+        Debug.Log(userNameInput.text);
+        Debug.Log(passwordInput.text);
         string message = string.Format("{0},{1},{2}", 1, userNameInput.text, passwordInput.text);
         networkedClient.SendMessageToHost(message);
     }

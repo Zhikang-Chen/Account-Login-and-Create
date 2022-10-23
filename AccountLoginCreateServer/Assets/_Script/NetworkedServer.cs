@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.IO;
 using UnityEngine.UI;
-using System.Net;
 
 [RequireComponent(typeof(PlayerDataManager))]
 public class NetworkedServer : MonoBehaviour
@@ -15,22 +14,18 @@ public class NetworkedServer : MonoBehaviour
     int reliableChannelID;
     int unreliableChannelID;
     int hostID;
-    int socketPort = 36182;
-    //string ip = "25.50.138.139";
+    int socketPort = 5491;
 
     // Start is called before the first frame update
     void Start()
     {
-        string hostName = Dns.GetHostName();
-        int lastAddress = Dns.GetHostByName(hostName).AddressList.Length - 1;
-        string ip = Dns.GetHostByName(hostName).AddressList[lastAddress].ToString();
-
         NetworkTransport.Init();
         ConnectionConfig config = new ConnectionConfig();
         reliableChannelID = config.AddChannel(QosType.Reliable);
         unreliableChannelID = config.AddChannel(QosType.Unreliable);
         HostTopology topology = new HostTopology(config, maxConnections);
         hostID = NetworkTransport.AddHost(topology, socketPort, null);
+
         playerDataManager = GetComponent<PlayerDataManager>();
     }
     // Update is called once per frame
@@ -59,6 +54,7 @@ public class NetworkedServer : MonoBehaviour
                 ProcessRecievedMsg(msg, recConnectionID);
                 break;
             case NetworkEventType.DisconnectEvent:
+                playerDataManager.OnPlayerDisconnect(recConnectionID);
                 Debug.Log("Disconnection, " + recConnectionID);
                 break;
         }
@@ -78,29 +74,24 @@ public class NetworkedServer : MonoBehaviour
 
         string[] data = msg.Split(',');
 
-        if (data.Length == 3)
-        {
+
             SendMessageToClient("Data recieved", id);
             string reply = data[0];
             string result = "-1";
-            if (data[0] == "0")
-            {
-                //int success = playerDataManager.PlayerLogin(data[1], data[2]);
-                result = string.Format(",{0}", playerDataManager.PlayerLogin(data[1], data[2]).ToString());
-            }
-            else if (data[0] == "1")
-            {
-                //int success = playerDataManager.CreateNewAccount(data[1], data[2]);
-                result = string.Format(",{0}", playerDataManager.CreateNewAccount(data[1], data[2]).ToString());
-            }
+        if (data[0] == "0")
+        {
+            //int success = playerDataManager.PlayerLogin(data[1], data[2]);
+            result = string.Format(",{0}", playerDataManager.PlayerLogin(id, data[1], data[2]).ToString());
+        }
+        else if (data[0] == "1")
+        {
+            //int success = playerDataManager.CreateNewAccount(data[1], data[2]);
+            result = string.Format(",{0}", playerDataManager.CreateNewAccount(id, data[1], data[2]).ToString());
+        }
+        
 
             SendMessageToClient(reply + result, id);
-        }
-        else
-        {
-            SendMessageToClient("Invaild data", id);
-
-        }
+       
 
     }
 

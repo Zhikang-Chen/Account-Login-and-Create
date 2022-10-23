@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Net;
-using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -15,8 +14,7 @@ public class NetworkedClient : MonoBehaviour
     int reliableChannelID;
     int unreliableChannelID;
     int hostID;
-    int socketPort;
-    //int socketPort = 36182;
+    int socketPort = 5491;
     byte error;
     bool isConnected = false;
     int ourClientID;
@@ -76,17 +74,7 @@ public class NetworkedClient : MonoBehaviour
             Debug.Log("Attempting to create connection");
 
             string hostName = Dns.GetHostName();
-            StreamReader SR = new StreamReader("IP.txt");
-            //string ip = Dns.GetHostByName(hostName).AddressList[1].ToString();
-            //string ip = "192.168.0.19";
-            //string ip = "192.168.0.1";
-            //string ip = "192.168.0.10";
-            //string ip = "72.136.55.93";
-            //string ip = "25.50.138.139";
-            string ip = SR.ReadLine();
-
-            socketPort = int.Parse(SR.ReadLine());
-            SR.Close();
+            string ip = Dns.GetHostByName(hostName).AddressList[1].ToString();
             Debug.Log(ip);
 
             if (ip != null)
@@ -133,31 +121,17 @@ public class NetworkedClient : MonoBehaviour
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
         string[] data = msg.Split(',');
 
-        if (data.Length == 2)
+        if (data[0] == "0")
         {
-            //int success = int.Parse(data[1]);
-            //if(success <= -1)
-            //{
-            //    // To DO:
-            //    // Put error message here
-            //    return;
-            //}
             bool successBool = bool.Parse(data[1]);
-
-
-            if (data[0] == "0")
-            {
-                UIManager.OnLogin(successBool);
-            }
-            else if (data[0] == "1")
-            {
-                UIManager.OnAccountCreation(successBool);
-            }
+            UIManager.OnLogin(successBool);
         }
-        else
+        else if (data[0] == "1")
         {
-            Debug.Log("Invaild data");
+            bool successBool = bool.Parse(data[1]);
+            UIManager.OnAccountCreation(successBool);
         }
+
     }
     public bool IsConnected()
     {

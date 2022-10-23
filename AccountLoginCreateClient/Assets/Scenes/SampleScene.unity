@@ -1106,7 +1106,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: If Things Goes Right You Wont see this
+  m_Text: If Things Goes Right You Wont see this~
 --- !u!222 &827878583
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1128,7 +1128,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textComp: {fileID: 0}
-  fadeTime: 5
+  fadeTime: 2.5
 --- !u!1 &934249210
 GameObject:
   m_ObjectHideFlags: 0
