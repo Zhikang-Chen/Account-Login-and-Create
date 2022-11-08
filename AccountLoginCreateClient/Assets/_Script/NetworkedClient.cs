@@ -5,24 +5,47 @@ using System.Net;
 using UnityEngine;
 using UnityEngine.Networking;
 
-[RequireComponent(typeof(LoginUIManager))]
 public class NetworkedClient : MonoBehaviour
 {
-    LoginUIManager UIManager;
-    int connectionID;
-    int maxConnections = 1000;
-    int reliableChannelID;
-    int unreliableChannelID;
-    int hostID;
-    int socketPort = 5491;
-    byte error;
-    bool isConnected = false;
-    int ourClientID;
+    //Singleton
+    static private NetworkedClient _instance = null;
+    static public NetworkedClient instance
+    {
+        get
+        {
+            return _instance;
+        }
+    }
+
+    void Awake()
+    {
+        if(_instance == null)
+        {
+            _instance = this;
+            DontDestroyOnLoad(_instance.gameObject);
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
+    }
+
+    //static LoginUIManager UIManager;
+
+    static int connectionID;
+    static int maxConnections = 1000;
+    static int reliableChannelID;
+    static int unreliableChannelID;
+    static int hostID;
+    static int socketPort = 5491;
+    static byte error;
+    static bool isConnected = false;
+    static int ourClientID;
 
     // Start is called before the first frame update
     void Start()
     {
-        UIManager = GetComponent<LoginUIManager>();
+        //UIManager = GetComponent<LoginUIManager>();
         Connect();
     }
 
@@ -32,7 +55,7 @@ public class NetworkedClient : MonoBehaviour
         UpdateNetworkConnection();
     }
 
-    private void UpdateNetworkConnection()
+    static private void UpdateNetworkConnection()
     {
         if (isConnected)
         {
@@ -62,10 +85,9 @@ public class NetworkedClient : MonoBehaviour
             }
         }
     }
-    
-    private void Connect()
-    {
 
+    static private void Connect()
+    {
         if (!isConnected)
         {
             Debug.Log("Attempting to create connection");
@@ -90,9 +112,7 @@ public class NetworkedClient : MonoBehaviour
                 if (error == 0)
                 {
                     isConnected = true;
-
                     Debug.Log("Connected, id = " + connectionID);
-
                 }
             }
             else
@@ -101,19 +121,24 @@ public class NetworkedClient : MonoBehaviour
             }
         }
     }
-    
-    public void Disconnect()
+
+    static public void Disconnect()
     {
+
+
+
         NetworkTransport.Disconnect(hostID, connectionID, out error);
     }
-    
-    public void SendMessageToHost(string msg)
+
+    static public void SendMessageToHost(string msg)
     {
         byte[] buffer = Encoding.Unicode.GetBytes(msg);
         NetworkTransport.Send(hostID, connectionID, reliableChannelID, buffer, msg.Length * sizeof(char), out error);
     }
 
-    private void ProcessRecievedMsg(string msg, int id)
+
+
+    static private void ProcessRecievedMsg(string msg, int id)
     {
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
         string[] data = msg.Split(',');
@@ -121,16 +146,23 @@ public class NetworkedClient : MonoBehaviour
         if (data[0] == "0")
         {
             bool successBool = bool.Parse(data[1]);
-            UIManager.OnLogin(successBool);
+            //UIManager.OnLogin(successBool);
+            LoginUIScript.OnLoginEvent.Invoke(successBool);
         }
         else if (data[0] == "1")
         {
             bool successBool = bool.Parse(data[1]);
-            UIManager.OnAccountCreation(successBool);
+            //UIManager.OnAccountCreation(successBool);
+            LoginUIScript.OnAccountCreationEvent.Invoke(successBool);
+        }
+        else if (data[0] == "2")
+        {
+            bool successBool = bool.Parse(data[1]);
+
         }
     }
 
-    public bool IsConnected()
+    static public bool IsConnected()
     {
         return isConnected;
     }

@@ -12,11 +12,24 @@ public class PlayerDataManager : MonoBehaviour
         public int ConnectID;
     }
 
+    [System.Serializable]
+    public class GameroomData
+    {
+        public string RoomName;
+        public int player1 = -1;
+        public int player2 = -1;
+    }
+
     private List<string> User = new List<string>();
     private List<string> Password = new List<string>();
 
 
     private LinkedList<ConnectionData> Connections = new LinkedList<ConnectionData>();
+
+    //Using list because it's serializable
+    //Change to LinkedList later
+    [SerializeField]
+    private List<GameroomData> Gamerooms = new List<GameroomData>();
 
     private void Awake()
     {
@@ -52,7 +65,7 @@ public class PlayerDataManager : MonoBehaviour
 
         int index = User.BinarySearch(user);
 
-        if(index == -1)
+        if(index <= -1)
         {
             return false;
         }
@@ -89,6 +102,8 @@ public class PlayerDataManager : MonoBehaviour
         }
         sr.Close();
 
+        //Appending to the file
+        //Maybe have some sort of buffer so it doesn't just delete everything if something goes wrong
         StreamWriter sw = new StreamWriter(fileName);
         foreach(string i in allData)
         {
@@ -97,7 +112,8 @@ public class PlayerDataManager : MonoBehaviour
         string newAccount = string.Format("{0},{1}", user, pass);
         sw.WriteLine(newAccount);
         sw.Close();
-        string[] loginData = line.Split(',');
+
+        //Add the new account to the list
         User.Add(user);
         Password.Add(pass);
 
@@ -107,5 +123,31 @@ public class PlayerDataManager : MonoBehaviour
     public bool DeleteAccount(int id, string user, string pass)
     {
         return false;
+    }
+
+    public bool CheckForGameroom(int id, string name)
+    {
+        foreach (var data in Gamerooms)
+        {
+            if (data.RoomName == name)
+            {
+                if (data.player2 == -1)
+                {
+                    //Connections.Remove(data);
+                    data.player2 = id;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        GameroomData newRoom = new GameroomData();
+        newRoom.RoomName = name;
+        newRoom.player1 = id;
+        Gamerooms.Add(newRoom);
+        return true;
     }
 }

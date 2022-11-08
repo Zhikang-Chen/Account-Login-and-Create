@@ -9,6 +9,30 @@ using UnityEngine.UI;
 [RequireComponent(typeof(PlayerDataManager))]
 public class NetworkedServer : MonoBehaviour
 {
+    //Singleton
+    static private NetworkedServer _instance = null;
+    static public NetworkedServer instance
+    {
+        get
+        {
+            return _instance;
+        }
+    }
+
+    void Awake()
+    {
+        if (_instance == null)
+        {
+            _instance = this;
+            DontDestroyOnLoad(_instance.gameObject);
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
+    }
+
+
     PlayerDataManager playerDataManager;
     int maxConnections = 1000;
     int reliableChannelID;
@@ -31,7 +55,6 @@ public class NetworkedServer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
         int recHostID;
         int recConnectionID;
         int recChannelID;
@@ -76,15 +99,19 @@ public class NetworkedServer : MonoBehaviour
         string result = "-1";
         if (data[0] == "0")
         {
-            //int success = playerDataManager.PlayerLogin(data[1], data[2]);
+            //Login 
             result = string.Format(",{0}", playerDataManager.PlayerLogin(id, data[1], data[2]).ToString());
         }
         else if (data[0] == "1")
         {
-            //int success = playerDataManager.CreateNewAccount(data[1], data[2]);
+            //Create account
             result = string.Format(",{0}", playerDataManager.CreateNewAccount(id, data[1], data[2]).ToString());
         }
-
+        else if (data[0] == "2")
+        {
+            //Create game room or find game room
+            result = string.Format(",{0}", playerDataManager.CheckForGameroom(id, data[1]));
+        }
         SendMessageToClient(reply + result, id);
     }
 
