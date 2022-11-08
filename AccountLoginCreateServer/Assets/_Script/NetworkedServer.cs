@@ -58,7 +58,6 @@ public class NetworkedServer : MonoBehaviour
                 Debug.Log("Disconnection, " + recConnectionID);
                 break;
         }
-
     }
   
     public void SendMessageToClient(string msg, int id)
@@ -67,17 +66,14 @@ public class NetworkedServer : MonoBehaviour
         byte[] buffer = Encoding.Unicode.GetBytes(msg);
         NetworkTransport.Send(hostID, id, reliableChannelID, buffer, msg.Length * sizeof(char), out error);
     }
-    
+
     private void ProcessRecievedMsg(string msg, int id)
     {
-        Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
-
+        //Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
         string[] data = msg.Split(',');
-
-
-            SendMessageToClient("Data recieved", id);
-            string reply = data[0];
-            string result = "-1";
+        SendMessageToClient("Data recieved", id);
+        string reply = data[0];
+        string result = "-1";
         if (data[0] == "0")
         {
             //int success = playerDataManager.PlayerLogin(data[1], data[2]);
@@ -88,11 +84,8 @@ public class NetworkedServer : MonoBehaviour
             //int success = playerDataManager.CreateNewAccount(data[1], data[2]);
             result = string.Format(",{0}", playerDataManager.CreateNewAccount(id, data[1], data[2]).ToString());
         }
-        
 
-            SendMessageToClient(reply + result, id);
-       
-
+        SendMessageToClient(reply + result, id);
     }
 
 }
