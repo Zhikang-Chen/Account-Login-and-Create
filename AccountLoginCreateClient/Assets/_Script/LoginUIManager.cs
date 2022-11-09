@@ -2,10 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using UnityEngine.Events;
 
-public class LoginUIScript : MonoBehaviour
+public class LoginUIManager : MonoBehaviour
 {
     [SerializeField]
     private InputField userNameInput;
@@ -14,42 +12,44 @@ public class LoginUIScript : MonoBehaviour
     private InputField passwordInput;
 
     [SerializeField]
+    private Button loginButton;
+
+    [SerializeField]
+    private Button newAccountButton;
+
+    [SerializeField]
     private FadingText fadingText;
 
-    static public UnityEvent<bool> OnLoginEvent = new UnityEvent<bool>();
-    static public UnityEvent<bool> OnAccountCreationEvent = new UnityEvent<bool>();
-
-
-    //private NetworkedClient networkedClient;
+    private NetworkedClient networkedClient;
     // Start is called before the first frame update
     public void Start()
     {
-        OnLoginEvent.AddListener(OnLogin);
-        OnAccountCreationEvent.AddListener(OnAccountCreation);
+        networkedClient = FindObjectOfType<NetworkedClient>();
+        if(networkedClient == null)
+        {
+            Debug.LogError("NetworedClient Not Found");
+        }
+
+        loginButton.onClick.AddListener(LoginButtonPress);
+        newAccountButton.onClick.AddListener(NewAccountButtonPress);
     }
 
-    private void OnDestroy()
-    {
-        OnLoginEvent.RemoveListener(OnLogin);
-        OnAccountCreationEvent.RemoveListener(OnAccountCreation);
-    }
-
-    public void LoginButtonPress()
+    void LoginButtonPress()
     {
         Debug.Log(userNameInput.text);
         Debug.Log(passwordInput.text);
         string message = string.Format("{0},{1},{2}", 0,userNameInput.text, passwordInput.text);
 
         //Debug.Log(message);
-        NetworkedClient.SendMessageToHost(message);
+        networkedClient.SendMessageToHost(message);
     }
 
-    public void NewAccountButtonPress()
+    void NewAccountButtonPress()
     {
         Debug.Log(userNameInput.text);
         Debug.Log(passwordInput.text);
         string message = string.Format("{0},{1},{2}", 1, userNameInput.text, passwordInput.text);
-        NetworkedClient.SendMessageToHost(message);
+        networkedClient.SendMessageToHost(message);
     }
 
     public void OnLogin(bool success)
@@ -57,7 +57,6 @@ public class LoginUIScript : MonoBehaviour
         if (success)
         {
             fadingText.ChangeText("Logging In~");
-            SceneManager.LoadScene("GameroomSearch");
         }
         else
         {

@@ -10,26 +10,16 @@ public class PlayerDataManager : MonoBehaviour
     {
         public string User;
         public int ConnectID;
+        public GameroomManager.GameroomData CurrentRoom = null;
     }
 
-    [System.Serializable]
-    public class GameroomData
-    {
-        public string RoomName;
-        public int player1 = -1;
-        public int player2 = -1;
-    }
 
+    //It's going to be pain to do deleting account
     private List<string> User = new List<string>();
     private List<string> Password = new List<string>();
 
 
     private LinkedList<ConnectionData> Connections = new LinkedList<ConnectionData>();
-
-    //Using list because it's serializable
-    //Change to LinkedList later
-    [SerializeField]
-    private List<GameroomData> Gamerooms = new List<GameroomData>();
 
     private void Awake()
     {
@@ -120,34 +110,10 @@ public class PlayerDataManager : MonoBehaviour
         return true;
     }
 
+    //WHY DID THE MADE THE ACCOUNT SYSTEM THIS WAY
+    //I REGRET EVERYTHING
     public bool DeleteAccount(int id, string user, string pass)
     {
         return false;
-    }
-
-    public bool CheckForGameroom(int id, string name)
-    {
-        foreach (var data in Gamerooms)
-        {
-            if (data.RoomName == name)
-            {
-                if (data.player2 == -1)
-                {
-                    //Connections.Remove(data);
-                    data.player2 = id;
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-
-        GameroomData newRoom = new GameroomData();
-        newRoom.RoomName = name;
-        newRoom.player1 = id;
-        Gamerooms.Add(newRoom);
-        return true;
     }
 }

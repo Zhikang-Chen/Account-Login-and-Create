@@ -6,6 +6,7 @@ using UnityEngine.Networking;
 using System.IO;
 using UnityEngine.UI;
 
+
 [RequireComponent(typeof(PlayerDataManager))]
 public class NetworkedServer : MonoBehaviour
 {
@@ -34,11 +35,13 @@ public class NetworkedServer : MonoBehaviour
 
 
     PlayerDataManager playerDataManager;
-    int maxConnections = 1000;
-    int reliableChannelID;
-    int unreliableChannelID;
-    int hostID;
-    int socketPort = 5491;
+    GameroomManager roomManager;
+
+    static public int maxConnections = 1000;
+    static int reliableChannelID;
+    static int unreliableChannelID;
+    static int hostID;
+    static int socketPort = 5491;
 
     // Start is called before the first frame update
     void Start()
@@ -51,6 +54,7 @@ public class NetworkedServer : MonoBehaviour
         hostID = NetworkTransport.AddHost(topology, socketPort, null);
 
         playerDataManager = GetComponent<PlayerDataManager>();
+        roomManager = GetComponent<GameroomManager>();
     }
     // Update is called once per frame
     void Update()
@@ -77,13 +81,14 @@ public class NetworkedServer : MonoBehaviour
                 ProcessRecievedMsg(msg, recConnectionID);
                 break;
             case NetworkEventType.DisconnectEvent:
+                roomManager.OnPlayerLeave(recConnectionID);
                 playerDataManager.OnPlayerDisconnect(recConnectionID);
                 Debug.Log("Disconnection, " + recConnectionID);
                 break;
         }
     }
-  
-    public void SendMessageToClient(string msg, int id)
+
+    static public void SendMessageToClient(string msg, int id)
     {
         byte error = 0;
         byte[] buffer = Encoding.Unicode.GetBytes(msg);
@@ -110,7 +115,12 @@ public class NetworkedServer : MonoBehaviour
         else if (data[0] == "2")
         {
             //Create game room or find game room
-            result = string.Format(",{0}", playerDataManager.CheckForGameroom(id, data[1]));
+            result = string.Format(",{0}", roomManager.CheckForGameroom(id, data[1]));
+        }
+        else if(data[0] == "3")
+        {
+            roomManager.OnPlayerLeave(id);
+            result = string.Format(",{0}", true);
         }
         SendMessageToClient(reply + result, id);
     }

@@ -124,9 +124,6 @@ public class NetworkedClient : MonoBehaviour
 
     static public void Disconnect()
     {
-
-
-
         NetworkTransport.Disconnect(hostID, connectionID, out error);
     }
 
@@ -143,6 +140,17 @@ public class NetworkedClient : MonoBehaviour
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
         string[] data = msg.Split(',');
 
+        //Message from server
+        if (data[0] == "S")
+        {
+            if(data[1] == "0")
+            {
+                GameroomUI.OnUpdateGameroom.Invoke();
+            }
+
+        }
+
+        //Reply from server 
         if (data[0] == "0")
         {
             bool successBool = bool.Parse(data[1]);
@@ -157,8 +165,9 @@ public class NetworkedClient : MonoBehaviour
         }
         else if (data[0] == "2")
         {
-            bool successBool = bool.Parse(data[1]);
-
+            //int roomID = int.Parse(data[1]);
+            int roomID = 0;
+            GameroomSearhUIScript.JoinRoom(roomID);
         }
     }
 
