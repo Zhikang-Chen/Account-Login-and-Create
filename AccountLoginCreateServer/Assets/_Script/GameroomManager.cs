@@ -17,6 +17,8 @@ public class GameroomManager : MonoBehaviour
 
         public RoomState CurrentState = RoomState.Empty;
         public string RoomName;
+
+
         public int Player1 = -1;
         public bool Player1Ready = false;
 
@@ -122,17 +124,17 @@ public class GameroomManager : MonoBehaviour
         return false;
     }
 
-    public void OnReadyUp(int id, GameroomData room)
-    {
-        if (room.Player1 == id)
-        {
-            room.Player1Ready = true;
-        }
-        else if (room.Player2 == id)
-        {
-            room.Player2Ready = true;
-        }
-    }
+    //public void OnReadyUp(int id, GameroomData room)
+    //{
+    //    if (room.Player1 == id)
+    //    {
+    //        room.Player1Ready = true;
+    //    }
+    //    else if (room.Player2 == id)
+    //    {
+    //        room.Player2Ready = true;
+    //    }
+    //}
 
     public void EndGame(int id, GameroomData room)
     {
