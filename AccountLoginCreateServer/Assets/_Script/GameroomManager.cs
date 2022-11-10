@@ -32,7 +32,7 @@ public class GameroomManager : MonoBehaviour
 
     private void Awake()
     {
-        MakeRooms();
+        //MakeRooms();
     }
 
     public void MakeRooms()
@@ -52,14 +52,25 @@ public class GameroomManager : MonoBehaviour
             {
                 room.Player1 = -1;
                 room.Player1Ready = false;
-                UpdateGameroom(id, room);
+
+                if (room.CurrentState == GameroomData.RoomState.Playing)
+                {
+                    EndGame(room.Player2, room);
+                }
+                //StartGame(id, room);
             }
 
             if (room.Player2 == id)
             {
                 room.Player2 = -1;
                 room.Player2Ready = false;
-                UpdateGameroom(id, room);
+
+                if(room.CurrentState == GameroomData.RoomState.Playing)
+                {
+                    EndGame(room.Player1, room);
+                }
+
+                //StartGame(id, room);
             }
 
             if (room.Player1 == -1 && room.Player2 == -1)
@@ -74,26 +85,31 @@ public class GameroomManager : MonoBehaviour
     {
         foreach (var data in Gamerooms)
         {
-            //if(data.CurrentState == GameroomData.RoomState.Empty)
-            //{
-
-            //    return true;
-            //}
-
-
             if (data.RoomName == name)
             {
                 if (data.Player2 == -1)
                 {
                     //Connections.Remove(data);
                     data.Player2 = id;
-                    UpdateGameroom(data.Player1, data);
-                    UpdateGameroom(data.Player2, data);
-
-                    return true;
+                    if (data.Player1 != -1)
+                    {
+                        StartGame(data.Player1, data);
+                        StartGame(data.Player2, data);
+                        data.CurrentState = GameroomData.RoomState.Playing;
+                        return true;
+                    }
+                    return false;
                 }
-                else
+                else if(data.Player1 == -1)
                 {
+                    data.Player1 = id;
+                    if(data.Player2 != -1)
+                    {
+                        StartGame(data.Player1, data);
+                        StartGame(data.Player2, data);
+                        data.CurrentState = GameroomData.RoomState.Playing;
+                        return true;
+                    }
                     return false;
                 }
             }
@@ -102,7 +118,6 @@ public class GameroomManager : MonoBehaviour
         GameroomData newRoom = new GameroomData();
         newRoom.RoomName = name;
         newRoom.Player1 = id;
-        UpdateGameroom(newRoom.Player1, newRoom);
         Gamerooms.Add(newRoom);
         return false;
     }
@@ -119,17 +134,23 @@ public class GameroomManager : MonoBehaviour
         }
     }
 
-    public void StartMatch(int id, GameroomData room)
+    public void EndGame(int id, GameroomData room)
     {
-
-        string address = "S, 1";
-        NetworkedServer.SendMessageToClient(address, id);
-    }
-
-    public void UpdateGameroom(int id, GameroomData room)
-    {
-        string address = "S, 0";
+        string address = "S,1";
         string msg = true.ToString();
         NetworkedServer.SendMessageToClient(address, id);
     }
+
+    public void StartGame(int id, GameroomData room)
+    {
+        string address = "S,0";
+        string msg = true.ToString();
+        NetworkedServer.SendMessageToClient(address, id);
+    }
+    //public void StartMatch(int id, GameroomData room)
+    //{
+
+    //    string address = "S, 1";
+    //    NetworkedServer.SendMessageToClient(address, id);
+    //}
 }

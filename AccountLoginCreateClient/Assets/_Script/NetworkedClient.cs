@@ -145,9 +145,12 @@ public class NetworkedClient : MonoBehaviour
         {
             if(data[1] == "0")
             {
-                GameroomUI.OnUpdateGameroom.Invoke();
+                GameroomUI.OnStart.Invoke();
             }
-
+            else if(data[1] == "1")
+            {
+                GameroomUI.OnEnd.Invoke();
+            }
         }
 
         //Reply from server 
@@ -165,9 +168,8 @@ public class NetworkedClient : MonoBehaviour
         }
         else if (data[0] == "2")
         {
-            //int roomID = int.Parse(data[1]);
-            int roomID = 0;
-            GameroomSearhUIScript.JoinRoom(roomID);
+            bool successBool = bool.Parse(data[1]);
+            GameroomSearchUIScript.JoinRoom(successBool);
         }
     }
 

@@ -53,25 +53,28 @@ public class PlayerDataManager : MonoBehaviour
         //No way to check is the user has already login
         //or check if the connection id has been in use
 
-        int index = User.BinarySearch(user);
 
-        if(index <= -1)
+        for (int i = 0; i < User.Count; i++)
         {
-            return false;
-        }
-        else if (Password[index] == pass)
-        {
-            ConnectionData Data = new ConnectionData();
-            Data.User = user;
-            Data.ConnectID = id;
-            Connections.AddLast(Data);
-            return true;
+            if (Password[i] == pass)
+            {
+                ConnectionData Data = new ConnectionData();
+                Data.User = user;
+                Data.ConnectID = id;
+                Connections.AddLast(Data);
+                return true;
+            }
         }
         return false;
     }
 
     public bool CreateNewAccount(int id, string user, string pass)
     {
+        if (User.Contains(user))
+        {
+            return false;
+        }
+
         string fileName = "PlayerDataFile.csv";
         StreamReader sr = new StreamReader(fileName);
         List<string> allData = new List<string>();

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public class GameroomSearhUIScript : MonoBehaviour
+public class GameroomSearchUIScript : MonoBehaviour
 {
     [SerializeField]
     private InputField nameInput;
@@ -16,6 +16,7 @@ public class GameroomSearhUIScript : MonoBehaviour
     private FadingText fadingText;
 
     static public int GameroomID = -1;
+    static public string CurrentLobbyName = null;
 
     private void Awake()
     {
@@ -25,19 +26,23 @@ public class GameroomSearhUIScript : MonoBehaviour
     public void OnJoin()
     {
         string message = string.Format("{0},{1}", 2, nameInput.text);
+        CurrentLobbyName = nameInput.text;
         NetworkedClient.SendMessageToHost(message);
     }
 
-    public void OnExit()
-    {
-        string message = string.Format("{0},{1}", 2, nameInput.text);
-        GameroomID = -1;
-        NetworkedClient.SendMessageToHost(message);
-    }
+    //public void OnExit()
+    //{
+    //    string message = string.Format("{0},{1}", 2, nameInput.text);
+    //    GameroomID = -1;
+    //    NetworkedClient.SendMessageToHost(message);
+    //    nameInput.text = null;
+    //}
 
-    static public void JoinRoom(int roomID)
+    static public void JoinRoom(bool FoundPlayer)
     {
-        GameroomID = roomID;
-        SceneManager.LoadScene("Gameroom");
+        if(FoundPlayer)
+            SceneManager.LoadScene("Game");
+        else
+            SceneManager.LoadScene("Gameroom");
     }
 }
