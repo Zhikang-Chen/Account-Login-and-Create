@@ -20,6 +20,7 @@ public class GameroomUI : MonoBehaviour
 
     static public void LeaveRoom()
     {
+        GameUIScript.CurrentRoomName = null;
         NetworkedClient.SendMessageToHost("3");
         SceneManager.LoadScene("GameroomSearch");
     }

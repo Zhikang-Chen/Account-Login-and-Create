@@ -99,7 +99,7 @@ public class NetworkedServer : MonoBehaviour
     {
         //Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
         string[] data = msg.Split(',');
-        SendMessageToClient("Data recieved", id);
+        //SendMessageToClient("Data recieved", id);
         string reply = data[0];
         string result = "-1";
         if (data[0] == "0")
@@ -121,6 +121,14 @@ public class NetworkedServer : MonoBehaviour
         {
             roomManager.OnPlayerLeave(id);
             result = string.Format(",{0}", true);
+        }
+        else if (data[0] == "4")
+        {
+            //roomManager.OnPlayerAction(id, data[1], int.Parse(data[2]), int.Parse(data[3]))
+
+            //if()
+
+            result = string.Format(",{0}", roomManager.OnPlayerAction(id, data[1], int.Parse(data[2]), int.Parse(data[3])));
         }
         SendMessageToClient(reply + result, id);
     }

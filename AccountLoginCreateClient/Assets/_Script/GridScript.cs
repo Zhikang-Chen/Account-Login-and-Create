@@ -1,9 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class GridScript : MonoBehaviour
 {
+    static public UnityAction<bool, int, int> UpdateGridAction = null;
+
     static public bool IsPlayer1Turn = true;
 
     [SerializeField]
@@ -28,56 +31,57 @@ public class GridScript : MonoBehaviour
             PositionData.Add(Col);
         }
         Debug.Log(PositionData);
+        UpdateGridAction = UpdateGrid;
     }
 
+    private void UpdateGrid(bool isPlayer1, int row, int col)
+    {
+        PositionData[col][row].UpdateSlotState(isPlayer1);
+    }
+
+    private void OnDestroy()
+    {
+        UpdateGridAction = null;
+    }
 
     // Update is called once per frame
     void Update()
     {
-        CheckForWinner();
+        //CheckForWinner();
     }
 
-    void CheckForWinner()
-    {
+    //void CheckForWinner()
+    //{
+    //    if ((PositionData[0][0].CurrentState != 0) &&
+    //        (PositionData[0][0].CurrentState == PositionData[1][1].CurrentState) &&
+    //        (PositionData[1][1].CurrentState == PositionData[2][2].CurrentState))
+    //    {
+    //        Debug.Log(PositionData[0][0].CurrentState);
+    //    }
+    //    else if ((PositionData[2][0].CurrentState != 0) &&
+    //            (PositionData[2][0].CurrentState == PositionData[1][1].CurrentState) &&
+    //            (PositionData[1][1].CurrentState == PositionData[0][2].CurrentState))
+    //    {
+    //        Debug.Log(PositionData[2][0].CurrentState);
+    //    }
 
-        //foreach (var row in PositionData)
-        //{
-        //    if ((row[0].CurrentState != 0) && (row[0].CurrentState == row[1].CurrentState) && (row[1].CurrentState == row[2].CurrentState))
-        //    {
-        //        Debug.Log(row[0]);
-        //    }
-        //}
+    //    for (int i = 0; i < 3; i++)
+    //    {
+    //        //Vertical
+    //        if ((PositionData[i][0].CurrentState != 0) &&
+    //        (PositionData[i][0].CurrentState == PositionData[i][1].CurrentState) &&
+    //        (PositionData[i][1].CurrentState == PositionData[i][2].CurrentState))
+    //        {
+    //            Debug.Log(PositionData[i][0].CurrentState);
+    //        }
 
-        if ((PositionData[0][0].CurrentState != 0) &&
-            (PositionData[0][0].CurrentState == PositionData[1][1].CurrentState) &&
-            (PositionData[1][1].CurrentState == PositionData[2][2].CurrentState))
-        {
-            Debug.Log(PositionData[0][0].CurrentState);
-        }
-        else if ((PositionData[2][0].CurrentState != 0) &&
-                (PositionData[2][0].CurrentState == PositionData[1][1].CurrentState) &&
-                (PositionData[1][1].CurrentState == PositionData[0][2].CurrentState))
-        {
-            Debug.Log(PositionData[2][0].CurrentState);
-        }
-
-        for (int i = 0; i < 3; i++)
-        {
-            //Vertical
-            if ((PositionData[i][0].CurrentState != 0) &&
-            (PositionData[i][0].CurrentState == PositionData[i][1].CurrentState) &&
-            (PositionData[i][1].CurrentState == PositionData[i][2].CurrentState))
-            {
-                Debug.Log(PositionData[i][0].CurrentState);
-            }
-
-            //Horizontal
-            else if ((PositionData[0][i].CurrentState != 0) &&
-                (PositionData[0][i].CurrentState == PositionData[1][i].CurrentState) &&
-                (PositionData[1][i].CurrentState == PositionData[2][i].CurrentState))
-            {
-                Debug.Log(PositionData[i][0].CurrentState);
-            }
-        }
-    }
+    //        //Horizontal
+    //        else if ((PositionData[0][i].CurrentState != 0) &&
+    //            (PositionData[0][i].CurrentState == PositionData[1][i].CurrentState) &&
+    //            (PositionData[1][i].CurrentState == PositionData[2][i].CurrentState))
+    //        {
+    //            Debug.Log(PositionData[i][0].CurrentState);
+    //        }
+    //    }
+    //}
 }

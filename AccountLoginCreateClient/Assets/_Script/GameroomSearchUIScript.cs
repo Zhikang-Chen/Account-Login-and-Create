@@ -16,7 +16,7 @@ public class GameroomSearchUIScript : MonoBehaviour
     private FadingText fadingText;
 
     static public int GameroomID = -1;
-    static public string CurrentLobbyName = null;
+    //static public string CurrentLobbyName = null;
 
     private void Awake()
     {
@@ -26,7 +26,7 @@ public class GameroomSearchUIScript : MonoBehaviour
     public void OnJoin()
     {
         string message = string.Format("{0},{1}", 2, nameInput.text);
-        CurrentLobbyName = nameInput.text;
+        GameUIScript.CurrentRoomName = nameInput.text;
         NetworkedClient.SendMessageToHost(message);
     }
 

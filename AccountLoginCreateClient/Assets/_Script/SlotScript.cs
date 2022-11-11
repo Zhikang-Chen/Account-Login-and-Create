@@ -40,20 +40,41 @@ public class SlotScript : MonoBehaviour
     {
         if(CurrentState == State.Empty)
         {
-            if(GridScript.IsPlayer1Turn)
-            {
-                TargetImage.gameObject.SetActive(true);
-                CurrentState = State.Player1;
-                TargetImage.sprite = XImage;
-                GridScript.IsPlayer1Turn = !GridScript.IsPlayer1Turn;
-            }
-            else
-            {
-                TargetImage.gameObject.SetActive(true);
-                CurrentState = State.Player2;
-                TargetImage.sprite = OImage;
-                GridScript.IsPlayer1Turn = !GridScript.IsPlayer1Turn;
-            }
+            string message = string.Format("4,{0},{1},{2}", GameUIScript.CurrentRoomName, Position.x, Position.y);
+            NetworkedClient.SendMessageToHost(message);
+
+            //if(GridScript.IsPlayer1Turn)
+            //{
+            //    //TargetImage.gameObject.SetActive(true);
+            //    //CurrentState = State.Player1;
+            //    //TargetImage.sprite = XImage;
+            //    //GridScript.IsPlayer1Turn = !GridScript.IsPlayer1Turn;
+            //}
+            //else
+            //{
+            //    //TargetImage.gameObject.SetActive(true);
+            //    //CurrentState = State.Player2;
+            //    //TargetImage.sprite = OImage;
+            //    //GridScript.IsPlayer1Turn = !GridScript.IsPlayer1Turn;
+            //}
+        }
+    }
+
+    public void UpdateSlotState(bool isPlayer1)
+    {
+        if (isPlayer1)
+        {
+            TargetImage.gameObject.SetActive(true);
+            CurrentState = State.Player1;
+            TargetImage.sprite = XImage;
+            GridScript.IsPlayer1Turn = !GridScript.IsPlayer1Turn;
+        }
+        else
+        {
+            TargetImage.gameObject.SetActive(true);
+            CurrentState = State.Player2;
+            TargetImage.sprite = OImage;
+            GridScript.IsPlayer1Turn = !GridScript.IsPlayer1Turn;
         }
     }
 }

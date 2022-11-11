@@ -151,6 +151,18 @@ public class NetworkedClient : MonoBehaviour
             {
                 GameroomUI.OnEnd.Invoke();
             }
+            else if(data[1] == "2")
+            {
+                Debug.Log("something");
+                bool.Parse(data[2]);
+                int.Parse(data[3]);
+                int.Parse(data[4]);
+                GridScript.UpdateGridAction(bool.Parse(data[2]), int.Parse(data[3]), int.Parse(data[4]));
+            }
+            else if(data[1] == "3")
+            {
+                bool.Parse(data[2]);
+            }
         }
 
         //Reply from server 
