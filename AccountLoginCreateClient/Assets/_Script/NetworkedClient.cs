@@ -145,23 +145,29 @@ public class NetworkedClient : MonoBehaviour
         {
             if(data[1] == "0")
             {
+                //Start game
                 GameroomUI.OnStart.Invoke();
             }
             else if(data[1] == "1")
             {
+                //End game
                 GameroomUI.OnEnd.Invoke();
             }
             else if(data[1] == "2")
             {
-                Debug.Log("something");
-                bool.Parse(data[2]);
-                int.Parse(data[3]);
-                int.Parse(data[4]);
+                //Update grid
                 GridScript.UpdateGridAction(bool.Parse(data[2]), int.Parse(data[3]), int.Parse(data[4]));
             }
             else if(data[1] == "3")
             {
-                bool.Parse(data[2]);
+                //Gameover
+                //bool.Parse(data[2]);
+                GameUIScript.OnGameover.Invoke(bool.Parse(data[2]));
+            }
+            else if(data[1] == "4")
+            {
+                //Messages
+                //GameUIScript.OnGameover.Invoke()
             }
         }
 

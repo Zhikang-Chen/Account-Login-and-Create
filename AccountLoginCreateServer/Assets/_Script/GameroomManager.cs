@@ -10,6 +10,8 @@ public class GameroomManager : MonoBehaviour
     [System.Serializable]
     public class Game
     {
+        int Turn = 0;
+
         public enum State
         {
             Empty = 0,
@@ -70,6 +72,12 @@ public class GameroomManager : MonoBehaviour
                     OnGameover(PositionData[0][i]);
                 }
             }
+
+            if(Turn >= 9)
+            {
+                OnGameover(State.Empty);
+            }
+            //Need condition for tie
         }
         public bool OnPlayerAction(int row, int col)
         {
@@ -79,6 +87,7 @@ public class GameroomManager : MonoBehaviour
                 {
                     PositionData[row][col] = State.Player1;
                     IsPlayer1Turn = !IsPlayer1Turn;
+                    Turn++;
                     CheckForWinner();
                     return true;
                 }
@@ -86,6 +95,7 @@ public class GameroomManager : MonoBehaviour
                 {
                     PositionData[row][col] = State.Player2;
                     IsPlayer1Turn = !IsPlayer1Turn;
+                    Turn++;
                     CheckForWinner();
                     return true;
                 }
@@ -99,6 +109,8 @@ public class GameroomManager : MonoBehaviour
             switch (winnter)
             {
                 case State.Empty:
+                    NetworkedServer.SendMessageToClient(address + false.ToString(), Gameroom.Player1);
+                    NetworkedServer.SendMessageToClient(address + false.ToString(), Gameroom.Player2);
                     break;
                 case State.Player1:
                     NetworkedServer.SendMessageToClient(address + true.ToString(), Gameroom.Player1);
@@ -127,10 +139,12 @@ public class GameroomManager : MonoBehaviour
 
 
         public int Player1 = -1;
-        public bool Player1Ready = false;
+        //public bool Player1Ready = false;
 
         public int Player2 = -1;
-        public bool Player2Ready = false;
+        //public bool Player2Ready = false;
+
+        //public List<int> Players = new List<int>();
 
         public Game CurrentGame = null;
 
@@ -156,13 +170,19 @@ public class GameroomManager : MonoBehaviour
 
             return result;
         }
+
+        public void SendMessage(int id, string message)
+        {
+            string address = "S,4";
+            string msg = true.ToString();
+            NetworkedServer.SendMessageToClient(address, id);
+        }
     }
 
     //Using list because it's serializable
     //Change to LinkedList later
     [SerializeField]
     private List<GameroomData> Gamerooms = new List<GameroomData>();
-    private int MaxRoom = NetworkedServer.maxConnections / 2;
 
     public void OnPlayerLeave(int id)
     {
@@ -171,7 +191,7 @@ public class GameroomManager : MonoBehaviour
             if (room.Player1 == id)
             {
                 room.Player1 = -1;
-                room.Player1Ready = false;
+                //room.Player1Ready = false;
 
                 if (room.CurrentState == GameroomData.RoomState.Playing)
                 {
@@ -183,7 +203,7 @@ public class GameroomManager : MonoBehaviour
             if (room.Player2 == id)
             {
                 room.Player2 = -1;
-                room.Player2Ready = false;
+                //room.Player2Ready = false;
 
                 if(room.CurrentState == GameroomData.RoomState.Playing)
                 {
@@ -254,6 +274,11 @@ public class GameroomManager : MonoBehaviour
     //    }
     //}
 
+    //public void SendMessage(int id, string message)
+    //{
+
+    //}
+
     public void EndGame(int id, GameroomData room)
     {
         string address = "S,1";
@@ -275,7 +300,6 @@ public class GameroomManager : MonoBehaviour
         {
             if (data.RoomName == GameroomName)
             {
-                //data.OnPlayerAction(id, row, col);
                 return data.OnPlayerAction(id, row, col);
             }
         }
