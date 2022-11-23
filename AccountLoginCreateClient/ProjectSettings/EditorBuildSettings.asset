@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Game.unity
     guid: 70a0bd77091144a4a98d604bf3878915
+  - enabled: 1
+    path: Assets/Scenes/ReplaySelection.unity
+    guid: 034e69027424401458170079cfafc671
   m_configObjects: {}

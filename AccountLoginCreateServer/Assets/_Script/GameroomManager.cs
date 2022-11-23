@@ -89,7 +89,7 @@ public class GameroomManager : MonoBehaviour
                     PositionData[row][col] = State.Player1;
                     IsPlayer1Turn = !IsPlayer1Turn;
                     Turn++;
-                    CheckForWinner();
+                    //CheckForWinner();
                     return true;
                 }
                 else
@@ -97,7 +97,7 @@ public class GameroomManager : MonoBehaviour
                     PositionData[row][col] = State.Player2;
                     IsPlayer1Turn = !IsPlayer1Turn;
                     Turn++;
-                    CheckForWinner();
+                    //CheckForWinner();
                     return true;
                 }
             }
@@ -184,6 +184,7 @@ public class GameroomManager : MonoBehaviour
                 Recording += SecondSinceLastAction.ToString() + "@" + address + message + "|";
                 LastAction = currentAction;
 
+                CurrentGame.CheckForWinner();
             }
 
             return result;

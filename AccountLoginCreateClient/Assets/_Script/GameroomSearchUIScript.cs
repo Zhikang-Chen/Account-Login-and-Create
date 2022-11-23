@@ -45,4 +45,9 @@ public class GameroomSearchUIScript : MonoBehaviour
         else
             SceneManager.LoadScene("Gameroom");
     }
+
+    public void OpenReplaySelection()
+    {
+        SceneManager.LoadScene("ReplaySelection");
+    }
 }

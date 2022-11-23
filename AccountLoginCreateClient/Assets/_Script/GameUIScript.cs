@@ -4,12 +4,14 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using System.IO;
 
 public class GameUIScript : MonoBehaviour
 {
     static public string CurrentRoomName = null;
     static public UnityEvent<bool> OnGameover = new UnityEvent<bool>();
     static public UnityEvent<string> OnGetMessageEvent = new UnityEvent<string>();
+    static public UnityEvent<string> OnReplayEvent = new UnityEvent<string>();
 
     [SerializeField]
     private Text GameoverText;
@@ -31,11 +33,22 @@ public class GameUIScript : MonoBehaviour
         GameoverText.gameObject.SetActive(false);
         OnGameover.AddListener(OnGameoverEvent);
         OnGetMessageEvent.AddListener(GetMessage);
+        //OnReplayEvent.AddListener(PlayReplay);
+
         SendButton.onClick.AddListener(SendMessage);
         GameroomUI.OnEnd.AddListener(LeaveRoom);
 
         string message = string.Format("6,{0}", CurrentRoomName);
         NetworkedClient.SendMessageToHost(message);
+    }
+
+    private void Start()
+    {
+        if(ReplayManager.file != null)
+        {
+            StartCoroutine(ReplayManager.ReplayFile(ReplayManager.file));
+            ReplayManager.file = null;
+        }
     }
 
     private void OnDestroy()
@@ -50,7 +63,11 @@ public class GameUIScript : MonoBehaviour
     {
         CurrentRoomName = null;
         NetworkedClient.SendMessageToHost("3");
-        SceneManager.LoadScene("GameroomSearch");
+
+        if(SceneManager.sceneCount <= 1)
+            SceneManager.LoadScene("GameroomSearch");
+        else
+            SceneManager.UnloadSceneAsync("GameroomSearch");
     }
 
     public void OnGameoverEvent(bool isWinner)
@@ -81,4 +98,6 @@ public class GameUIScript : MonoBehaviour
         var chat = Instantiate(TextPrefab, ChatBox.transform).GetComponent<Text>();
         chat.text = msg;
     }
+
+
 }

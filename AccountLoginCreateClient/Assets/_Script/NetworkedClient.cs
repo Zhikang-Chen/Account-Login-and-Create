@@ -32,7 +32,7 @@ public class NetworkedClient : MonoBehaviour
 
     //static LoginUIManager UIManager;
 
-    static int connectionID;
+    public static int connectionID;
     static int maxConnections = 1000;
     static int reliableChannelID;
     static int unreliableChannelID;
@@ -135,7 +135,7 @@ public class NetworkedClient : MonoBehaviour
 
 
 
-    static private void ProcessRecievedMsg(string msg, int id)
+    static public void ProcessRecievedMsg(string msg, int id)
     {
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
         string[] data = msg.Split(',');

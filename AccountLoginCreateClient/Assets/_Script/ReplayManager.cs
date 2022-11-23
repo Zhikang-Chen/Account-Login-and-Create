@@ -3,14 +3,11 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ReplayManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        //GetReplayFiles();
-    }
+    static public string file = null;
 
     static public void SaveReplayFiles(string roomName, string ReplayData)
     {
@@ -25,7 +22,7 @@ public class ReplayManager : MonoBehaviour
         sw.Close();
     }
 
-    static public void GetReplayFiles()
+    static public List<string> GetReplayFiles()
     {
         List<string> ReplayFilesName = new List<string>();
         System.IO.DirectoryInfo files = new System.IO.DirectoryInfo("Replay/");
@@ -34,21 +31,36 @@ public class ReplayManager : MonoBehaviour
             Debug.Log(i.FullName);
             ReplayFilesName.Add(i.Name);
         }
-        //return ReplayFilesName;
+        return ReplayFilesName;
     }
 
-    static public void PlayReplayFiles(string fileName)
+    public void PlayReplayFiles(string FileName)
     {
+        //GameUIScript.OnReplayEvent.AddListener(PlayReplay);
+        //ReplayFile(FileName));
+        file = FileName;
+        SceneManager.LoadScene("Game");
 
+    }
 
-        //DateTime.Compare
-        //List<string> ReplayFilesName = new List<string>();
-        //System.IO.DirectoryInfo files = new System.IO.DirectoryInfo("Replay/");
-        //foreach (var i in files.GetFiles())
-        //{
-        //    Debug.Log(i.FullName);
-        //    ReplayFilesName.Add(i.Name);
-        //}
-        //return ReplayFilesName;
+    static public IEnumerator ReplayFile(string FileName)
+    {
+        yield return new WaitForFixedUpdate();
+
+        string fileName = string.Format("Replay/{0}", FileName);
+        StreamReader sr = new StreamReader(fileName);
+        if (sr != null)
+        {
+            string line;
+            line = sr.ReadLine();
+
+            while (line != null)
+            {
+                var data = line.Split("@");
+                yield return new WaitForSeconds(float.Parse(data[0]));
+                NetworkedClient.ProcessRecievedMsg(data[1], NetworkedClient.connectionID);
+                line = sr.ReadLine();
+            }
+        }
     }
 }
