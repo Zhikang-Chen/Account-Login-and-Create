@@ -180,7 +180,8 @@ public class GameroomManager : MonoBehaviour
 
                 //DateTime.Now.ToBinary().ToString();
                 var currentAction = DateTime.Now;
-                float SecondSinceLastAction = ((currentAction.Millisecond - LastAction.Millisecond) / 1000.0f);
+                double SecondSinceLastAction = currentAction.Subtract(LastAction).TotalSeconds;
+                //float SecondSinceLastAction = ((currentAction.Millisecond - LastAction.Millisecond) / 1000.0f);
                 Recording += SecondSinceLastAction.ToString() + "@" + address + message + "|";
                 LastAction = currentAction;
 
@@ -200,10 +201,12 @@ public class GameroomManager : MonoBehaviour
             {
                 NetworkedServer.SendMessageToClient(address + msg, player);
             }
-            //LastAction.Millisecond - currentAction.Millisecond;
+
+            //DateTime.Now.ToBinary().ToString();
             var currentAction = DateTime.Now;
-            float SecondSinceLastAction = ((currentAction.Millisecond - LastAction.Millisecond) / 1000.0f);
-            Recording += SecondSinceLastAction.ToString() + "@" + address + msg + "|";
+            double SecondSinceLastAction = currentAction.Subtract(LastAction).TotalSeconds;
+            //float SecondSinceLastAction = ((currentAction.Millisecond - LastAction.Millisecond) / 1000.0f);
+            Recording += SecondSinceLastAction.ToString() + "@" + address + message + "|";
             LastAction = currentAction;
 
             return true;
