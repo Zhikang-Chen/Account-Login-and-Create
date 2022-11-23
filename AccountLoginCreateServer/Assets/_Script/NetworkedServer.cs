@@ -6,15 +6,42 @@ using UnityEngine.Networking;
 using System.IO;
 using UnityEngine.UI;
 
+
 [RequireComponent(typeof(PlayerDataManager))]
 public class NetworkedServer : MonoBehaviour
 {
+    //Singleton
+    static private NetworkedServer _instance = null;
+    static public NetworkedServer instance
+    {
+        get
+        {
+            return _instance;
+        }
+    }
+
+    void Awake()
+    {
+        if (_instance == null)
+        {
+            _instance = this;
+            DontDestroyOnLoad(_instance.gameObject);
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
+    }
+
+
     PlayerDataManager playerDataManager;
-    int maxConnections = 1000;
-    int reliableChannelID;
-    int unreliableChannelID;
-    int hostID;
-    int socketPort = 5491;
+    GameroomManager roomManager;
+
+    static public int maxConnections = 1000;
+    static int reliableChannelID;
+    static int unreliableChannelID;
+    static int hostID;
+    static int socketPort = 5491;
 
     // Start is called before the first frame update
     void Start()
@@ -27,11 +54,11 @@ public class NetworkedServer : MonoBehaviour
         hostID = NetworkTransport.AddHost(topology, socketPort, null);
 
         playerDataManager = GetComponent<PlayerDataManager>();
+        roomManager = GetComponent<GameroomManager>();
     }
     // Update is called once per frame
     void Update()
     {
-
         int recHostID;
         int recConnectionID;
         int recChannelID;
@@ -54,49 +81,60 @@ public class NetworkedServer : MonoBehaviour
                 ProcessRecievedMsg(msg, recConnectionID);
                 break;
             case NetworkEventType.DisconnectEvent:
+                roomManager.OnPlayerLeave(recConnectionID);
+                playerDataManager.OnPlayerDisconnect(recConnectionID);
                 Debug.Log("Disconnection, " + recConnectionID);
                 break;
         }
-
     }
-  
-    public void SendMessageToClient(string msg, int id)
+
+    static public void SendMessageToClient(string msg, int id)
     {
         byte error = 0;
         byte[] buffer = Encoding.Unicode.GetBytes(msg);
         NetworkTransport.Send(hostID, id, reliableChannelID, buffer, msg.Length * sizeof(char), out error);
     }
-    
+
     private void ProcessRecievedMsg(string msg, int id)
     {
-        Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
-
+        //Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
         string[] data = msg.Split(',');
-
-        if (data.Length == 3)
+        //SendMessageToClient("Data recieved", id);
+        string reply = data[0];
+        string result = "-1";
+        if (data[0] == "0")
         {
-            SendMessageToClient("Data recieved", id);
-            string reply = data[0];
-            string result = "-1";
-            if (data[0] == "0")
-            {
-                //int success = playerDataManager.PlayerLogin(data[1], data[2]);
-                result = string.Format(",{0}", playerDataManager.PlayerLogin(data[1], data[2]).ToString());
-            }
-            else if (data[0] == "1")
-            {
-                //int success = playerDataManager.CreateNewAccount(data[1], data[2]);
-                result = string.Format(",{0}", playerDataManager.CreateNewAccount(data[1], data[2]).ToString());
-            }
-
-            SendMessageToClient(reply + result, id);
+            //Login 
+            result = string.Format(",{0}", playerDataManager.PlayerLogin(id, data[1], data[2]).ToString());
         }
-        else
+        else if (data[0] == "1")
         {
-            SendMessageToClient("Invaild data", id);
-
+            //Create account
+            result = string.Format(",{0}", playerDataManager.CreateNewAccount(id, data[1], data[2]).ToString());
         }
-
+        else if (data[0] == "2")
+        {
+            //Create game room or find game room
+            result = string.Format(",{0}", roomManager.CheckForGameroom(id, data[1]));
+        }
+        else if(data[0] == "3")
+        {
+            roomManager.OnPlayerLeave(id);
+            result = string.Format(",{0}", true);
+        }
+        else if (data[0] == "4")
+        {
+            result = string.Format(",{0}", roomManager.OnPlayerAction(id, data[1], int.Parse(data[2]), int.Parse(data[3])));
+        }
+        else if(data[0] == "5")
+        {
+            result = string.Format(",{0}", roomManager.OnPlayerMessage(id, data[1], data[2]));
+        }
+        else if(data[0] == "6")
+        {
+            result = string.Format(",{0}", roomManager.SyncUp(id, data[1]));
+        }
+        SendMessageToClient(reply + result, id);
     }
 
 }

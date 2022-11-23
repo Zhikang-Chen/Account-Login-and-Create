@@ -5,37 +5,57 @@ using System.Net;
 using UnityEngine;
 using UnityEngine.Networking;
 
-[RequireComponent(typeof(LoginUIManager))]
 public class NetworkedClient : MonoBehaviour
 {
-    LoginUIManager UIManager;
-    int connectionID;
-    int maxConnections = 1000;
-    int reliableChannelID;
-    int unreliableChannelID;
-    int hostID;
-    int socketPort = 5491;
-    byte error;
-    bool isConnected = false;
-    int ourClientID;
+    //Singleton
+    static private NetworkedClient _instance = null;
+    static public NetworkedClient instance
+    {
+        get
+        {
+            return _instance;
+        }
+    }
+
+    void Awake()
+    {
+        if(_instance == null)
+        {
+            _instance = this;
+            DontDestroyOnLoad(_instance.gameObject);
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
+    }
+
+    //static LoginUIManager UIManager;
+
+    public static int connectionID;
+    static int maxConnections = 1000;
+    static int reliableChannelID;
+    static int unreliableChannelID;
+    static int hostID;
+    static int socketPort = 5491;
+    static byte error;
+    static bool isConnected = false;
+    static int ourClientID;
 
     // Start is called before the first frame update
     void Start()
     {
-        UIManager = GetComponent<LoginUIManager>();
+        //UIManager = GetComponent<LoginUIManager>();
         Connect();
     }
 
     // Update is called once per frame
     void Update()
     {
-        //if(Input.GetKeyDown(KeyCode.S))
-        //    SendMessageToHost("Hello from client");
-
         UpdateNetworkConnection();
     }
 
-    private void UpdateNetworkConnection()
+    static private void UpdateNetworkConnection()
     {
         if (isConnected)
         {
@@ -65,10 +85,9 @@ public class NetworkedClient : MonoBehaviour
             }
         }
     }
-    
-    private void Connect()
-    {
 
+    static private void Connect()
+    {
         if (!isConnected)
         {
             Debug.Log("Attempting to create connection");
@@ -93,9 +112,7 @@ public class NetworkedClient : MonoBehaviour
                 if (error == 0)
                 {
                     isConnected = true;
-
                     Debug.Log("Connected, id = " + connectionID);
-
                 }
             }
             else
@@ -104,53 +121,97 @@ public class NetworkedClient : MonoBehaviour
             }
         }
     }
-    
-    public void Disconnect()
+
+    static public void Disconnect()
     {
         NetworkTransport.Disconnect(hostID, connectionID, out error);
     }
-    
-    public void SendMessageToHost(string msg)
+
+    static public void SendMessageToHost(string msg)
     {
         byte[] buffer = Encoding.Unicode.GetBytes(msg);
         NetworkTransport.Send(hostID, connectionID, reliableChannelID, buffer, msg.Length * sizeof(char), out error);
     }
 
-    private void ProcessRecievedMsg(string msg, int id)
+
+
+    static public void ProcessRecievedMsg(string msg, int id)
     {
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
         string[] data = msg.Split(',');
 
-        if (data.Length == 2)
+        //Message from server
+        if (data[0] == "S")
         {
-            //int success = int.Parse(data[1]);
-            //if(success <= -1)
-            //{
-            //    // To DO:
-            //    // Put error message here
-            //    return;
-            //}
-            bool successBool = bool.Parse(data[1]);
-
-
-            if (data[0] == "0")
+            if (data[1] == "0")
             {
-                UIManager.OnLogin(successBool);
+                //Start game
+                GameroomUI.OnStart.Invoke();
             }
-            else if (data[0] == "1")
+            else if (data[1] == "1")
             {
-                UIManager.OnAccountCreation(successBool);
+                //End game
+                GameroomUI.OnEnd.Invoke();
+            }
+            else if (data[1] == "2")
+            {
+                //Update grid
+                GridScript.UpdateGridAction(bool.Parse(data[2]), int.Parse(data[3]), int.Parse(data[4]));
+            }
+            else if (data[1] == "3")
+            {
+                //Gameover
+                //bool.Parse(data[2]);
+                GameUIScript.OnGameover.Invoke(bool.Parse(data[2]));
+            }
+            else if (data[1] == "4")
+            {
+                //Messages
+                //GameUIScript.OnGameover.Invoke()
+                GameUIScript.OnGetMessageEvent.Invoke(data[2]);
+            }
+            else if (data[1] == "5")
+            {
+                //Debug.Log(msg);
+                string[] actions = msg.Split("|");
+
+                for (int i = 1; i < actions.Length - 1; i++)
+                {
+                    //Debug.Log(actions);
+                    string[] command = actions[i].Split("@");
+                    ProcessRecievedMsg(command[1], connectionID);
+                }
+            }
+            else if (data[1] == "6")
+            {
+                //string[] actions = msg.Split("|");
+
+                ReplayManager.SaveReplayFiles(GameUIScript.CurrentRoomName, msg);
+                //Save stuff from server
             }
         }
-        else
+        //Reply from server 
+        if (data[0] == "0")
         {
-            Debug.Log("Invaild data");
+            bool successBool = bool.Parse(data[1]);
+            //UIManager.OnLogin(successBool);
+            LoginUIScript.OnLoginEvent.Invoke(successBool);
+        }
+        else if (data[0] == "1")
+        {
+            bool successBool = bool.Parse(data[1]);
+            //UIManager.OnAccountCreation(successBool);
+            LoginUIScript.OnAccountCreationEvent.Invoke(successBool);
+        }
+        else if (data[0] == "2")
+        {
+            bool successBool = bool.Parse(data[1]);
+            GameroomSearchUIScript.JoinRoom(successBool);
         }
     }
-    public bool IsConnected()
+
+    static public bool IsConnected()
     {
         return isConnected;
     }
-
-
 }
