@@ -168,6 +168,19 @@ public class NetworkedClient : MonoBehaviour
             {
                 //Messages
                 //GameUIScript.OnGameover.Invoke()
+                GameUIScript.OnGetMessageEvent.Invoke(data[2]);
+            }
+            else if(data[1] == "5")
+            {
+                //Debug.Log(msg);
+                string[] actions = msg.Split("|");
+
+                for (int i = 1; i < actions.Length; i++)
+                {
+                    //Debug.Log(actions);
+                    ProcessRecievedMsg(actions[i], connectionID);
+                }
+
             }
         }
 
@@ -195,6 +208,4 @@ public class NetworkedClient : MonoBehaviour
     {
         return isConnected;
     }
-
-
 }

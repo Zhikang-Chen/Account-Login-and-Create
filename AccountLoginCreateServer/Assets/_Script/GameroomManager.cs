@@ -124,7 +124,7 @@ public class GameroomManager : MonoBehaviour
         }
     }
 
-        [System.Serializable]
+    [System.Serializable]
     public class GameroomData
     {
         public enum RoomState
@@ -135,18 +135,18 @@ public class GameroomManager : MonoBehaviour
         }
 
         public RoomState CurrentState = RoomState.Empty;
+
         public string RoomName;
 
-
         public int Player1 = -1;
-        //public bool Player1Ready = false;
 
         public int Player2 = -1;
-        //public bool Player2Ready = false;
 
-        //public List<int> Players = new List<int>();
+        public List<int> Players = new List<int>();
 
         public Game CurrentGame = null;
+
+        public string Recording = "";
 
         public bool OnPlayerAction(int id, int row, int col)
         {
@@ -166,16 +166,30 @@ public class GameroomManager : MonoBehaviour
             {
                 NetworkedServer.SendMessageToClient(address + message, Player1);
                 NetworkedServer.SendMessageToClient(address + message, Player2);
+
+                foreach (var player in Players)
+                {
+                    NetworkedServer.SendMessageToClient(address + message, player);
+                }
+
+                Recording += address + message + "|";
             }
 
             return result;
         }
 
-        public void SendMessage(int id, string message)
+        public bool Message(int id, string message)
         {
-            string address = "S,4";
-            string msg = true.ToString();
-            NetworkedServer.SendMessageToClient(address, id);
+            string address = "S,4,";
+            string msg = message;
+            NetworkedServer.SendMessageToClient(address + msg, Player1);
+            NetworkedServer.SendMessageToClient(address + msg, Player2);
+            foreach(var player in Players)
+            {
+                NetworkedServer.SendMessageToClient(address + msg, player);
+            }
+            Recording += address + msg + "|";
+            return true;
         }
     }
 
@@ -190,27 +204,35 @@ public class GameroomManager : MonoBehaviour
         {
             if (room.Player1 == id)
             {
-                room.Player1 = -1;
                 //room.Player1Ready = false;
 
                 if (room.CurrentState == GameroomData.RoomState.Playing)
                 {
+                    EndGame(room.Player1, room);
                     EndGame(room.Player2, room);
+                    room.Player2 = -1;
                 }
+                room.Player1 = -1;
                 //StartGame(id, room);
             }
-
-            if (room.Player2 == id)
+            else if (room.Player2 == id)
             {
-                room.Player2 = -1;
                 //room.Player2Ready = false;
 
                 if(room.CurrentState == GameroomData.RoomState.Playing)
                 {
                     EndGame(room.Player1, room);
+                    EndGame(room.Player2, room);
+                    room.Player1 = -1;
                 }
+                room.Player2 = -1;
 
                 //StartGame(id, room);
+            }
+            else
+            {
+                EndGame(id, room);
+                room.Players.Remove(id);
             }
 
             if (room.Player1 == -1 && room.Player2 == -1)
@@ -252,6 +274,18 @@ public class GameroomManager : MonoBehaviour
                     }
                     return false;
                 }
+                else
+                {
+                    data.Players.Add(id);
+
+                    //data.Recording;
+                    string address = "S,5,|";
+                    StartGame(id, data);
+                    //NetworkedServer.SendMessageToClient(address+data.Recording, id);
+
+
+                    return true;
+                }
             }
         }
 
@@ -262,27 +296,9 @@ public class GameroomManager : MonoBehaviour
         return false;
     }
 
-    //public void OnReadyUp(int id, GameroomData room)
-    //{
-    //    if (room.Player1 == id)
-    //    {
-    //        room.Player1Ready = true;
-    //    }
-    //    else if (room.Player2 == id)
-    //    {
-    //        room.Player2Ready = true;
-    //    }
-    //}
-
-    //public void SendMessage(int id, string message)
-    //{
-
-    //}
-
     public void EndGame(int id, GameroomData room)
     {
         string address = "S,1";
-        string msg = true.ToString();
         NetworkedServer.SendMessageToClient(address, id);
     }
 
@@ -294,6 +310,7 @@ public class GameroomManager : MonoBehaviour
         NetworkedServer.SendMessageToClient(address, id);
     }
 
+    // THIS IS ACTUALLY CAUSING ME ACTUAL PAIN
     public bool OnPlayerAction(int id, string GameroomName, int row, int col)
     {
         foreach (var data in Gamerooms)
@@ -306,5 +323,34 @@ public class GameroomManager : MonoBehaviour
         return false;
     }
 
-    
+    // I HATE USING LINKLIST FOR THIS SO FUCKING MUCH
+    public bool OnPlayerMessage(int id, string GameroomName, string msg)
+    {
+        foreach (var data in Gamerooms)
+        {
+            if (data.RoomName == GameroomName)
+            {
+                return data.Message(id, msg);
+            }
+        }
+        return false;
+    }
+
+    public bool SyncUp(int id, string GameroomName)
+    {
+        foreach (var data in Gamerooms)
+        {
+            if (data.RoomName == GameroomName)
+            {
+                if (id != data.Player1 && id != data.Player2)
+                {
+                    string address = "S,5,|";
+                    NetworkedServer.SendMessageToClient(address + data.Recording, id);
+                    return true;
+                }
+                return false;
+            }
+        }
+        return false;
+    }
 }

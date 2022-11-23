@@ -18,6 +18,12 @@ public class GameroomUI : MonoBehaviour
         OnEnd.AddListener(LeaveRoom);
     }
 
+    private void OnDestroy()
+    {
+        OnStart.RemoveListener(StartGame);
+        OnEnd.RemoveListener(LeaveRoom);
+    }
+
     static public void LeaveRoom()
     {
         GameUIScript.CurrentRoomName = null;

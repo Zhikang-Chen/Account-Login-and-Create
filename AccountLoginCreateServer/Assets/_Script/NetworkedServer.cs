@@ -124,11 +124,15 @@ public class NetworkedServer : MonoBehaviour
         }
         else if (data[0] == "4")
         {
-            //roomManager.OnPlayerAction(id, data[1], int.Parse(data[2]), int.Parse(data[3]))
-
-            //if()
-
             result = string.Format(",{0}", roomManager.OnPlayerAction(id, data[1], int.Parse(data[2]), int.Parse(data[3])));
+        }
+        else if(data[0] == "5")
+        {
+            result = string.Format(",{0}", roomManager.OnPlayerMessage(id, data[1], data[2]));
+        }
+        else if(data[0] == "6")
+        {
+            result = string.Format(",{0}", roomManager.SyncUp(id, data[1]));
         }
         SendMessageToClient(reply + result, id);
     }
