@@ -37,6 +37,7 @@ public class GameroomManager : MonoBehaviour
                 PositionData.Add(Col);
             }
             Debug.Log(PositionData);
+            room.LastAction = DateTime.Now;
         }
 
         public void CheckForWinner()
@@ -150,6 +151,8 @@ public class GameroomManager : MonoBehaviour
 
         public string Recording = "";
 
+        public DateTime LastAction;
+
         public bool OnPlayerAction(int id, int row, int col)
         {
             bool result = false;
@@ -174,9 +177,12 @@ public class GameroomManager : MonoBehaviour
                     NetworkedServer.SendMessageToClient(address + message, player);
                 }
 
-                DateTime.Now.ToBinary().ToString();
-                Recording += DateTime.Now.ToBinary() + "@" + address + message + "|";
 
+                //DateTime.Now.ToBinary().ToString();
+                var currentAction = DateTime.Now;
+                float SecondSinceLastAction = ((currentAction.Millisecond - LastAction.Millisecond) / 1000.0f);
+                Recording += SecondSinceLastAction.ToString() + "@" + address + message + "|";
+                LastAction = currentAction;
 
             }
 
@@ -193,8 +199,11 @@ public class GameroomManager : MonoBehaviour
             {
                 NetworkedServer.SendMessageToClient(address + msg, player);
             }
-            Recording += address + msg + "|";
-
+            //LastAction.Millisecond - currentAction.Millisecond;
+            var currentAction = DateTime.Now;
+            float SecondSinceLastAction = ((currentAction.Millisecond - LastAction.Millisecond) / 1000.0f);
+            Recording += SecondSinceLastAction.ToString() + "@" + address + msg + "|";
+            LastAction = currentAction;
 
             return true;
         }

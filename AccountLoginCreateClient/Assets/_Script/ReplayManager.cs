@@ -36,4 +36,19 @@ public class ReplayManager : MonoBehaviour
         }
         //return ReplayFilesName;
     }
+
+    static public void PlayReplayFiles(string fileName)
+    {
+
+
+        //DateTime.Compare
+        //List<string> ReplayFilesName = new List<string>();
+        //System.IO.DirectoryInfo files = new System.IO.DirectoryInfo("Replay/");
+        //foreach (var i in files.GetFiles())
+        //{
+        //    Debug.Log(i.FullName);
+        //    ReplayFilesName.Add(i.Name);
+        //}
+        //return ReplayFilesName;
+    }
 }
