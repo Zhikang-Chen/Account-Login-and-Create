@@ -143,47 +143,53 @@ public class NetworkedClient : MonoBehaviour
         //Message from server
         if (data[0] == "S")
         {
-            if(data[1] == "0")
+            if (data[1] == "0")
             {
                 //Start game
                 GameroomUI.OnStart.Invoke();
             }
-            else if(data[1] == "1")
+            else if (data[1] == "1")
             {
                 //End game
                 GameroomUI.OnEnd.Invoke();
             }
-            else if(data[1] == "2")
+            else if (data[1] == "2")
             {
                 //Update grid
                 GridScript.UpdateGridAction(bool.Parse(data[2]), int.Parse(data[3]), int.Parse(data[4]));
             }
-            else if(data[1] == "3")
+            else if (data[1] == "3")
             {
                 //Gameover
                 //bool.Parse(data[2]);
                 GameUIScript.OnGameover.Invoke(bool.Parse(data[2]));
             }
-            else if(data[1] == "4")
+            else if (data[1] == "4")
             {
                 //Messages
                 //GameUIScript.OnGameover.Invoke()
                 GameUIScript.OnGetMessageEvent.Invoke(data[2]);
             }
-            else if(data[1] == "5")
+            else if (data[1] == "5")
             {
                 //Debug.Log(msg);
                 string[] actions = msg.Split("|");
 
-                for (int i = 1; i < actions.Length; i++)
+                for (int i = 1; i < actions.Length - 1; i++)
                 {
                     //Debug.Log(actions);
-                    ProcessRecievedMsg(actions[i], connectionID);
+                    string[] command = actions[i].Split("@");
+                    ProcessRecievedMsg(command[1], connectionID);
                 }
+            }
+            else if (data[1] == "6")
+            {
+                //string[] actions = msg.Split("|");
 
+                ReplayManager.SaveReplayFiles(GameUIScript.CurrentRoomName, msg);
+                //Save stuff from server
             }
         }
-
         //Reply from server 
         if (data[0] == "0")
         {

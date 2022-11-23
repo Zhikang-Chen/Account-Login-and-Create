@@ -121,6 +121,8 @@ public class GameroomManager : MonoBehaviour
                     NetworkedServer.SendMessageToClient(address + true.ToString(), Gameroom.Player2);
                     break;
             }
+
+            Gameroom.SendReplay();
         }
     }
 
@@ -172,7 +174,10 @@ public class GameroomManager : MonoBehaviour
                     NetworkedServer.SendMessageToClient(address + message, player);
                 }
 
-                Recording += address + message + "|";
+                DateTime.Now.ToBinary().ToString();
+                Recording += DateTime.Now.ToBinary() + "@" + address + message + "|";
+
+
             }
 
             return result;
@@ -189,6 +194,22 @@ public class GameroomManager : MonoBehaviour
                 NetworkedServer.SendMessageToClient(address + msg, player);
             }
             Recording += address + msg + "|";
+
+
+            return true;
+        }
+
+        public bool SendReplay()
+        {
+            string address = "S,6,|";
+            NetworkedServer.SendMessageToClient(address + Recording, Player1);
+            NetworkedServer.SendMessageToClient(address + Recording, Player2);
+
+            foreach (var player in Players)
+            {
+                NetworkedServer.SendMessageToClient(address + Recording, player);
+            }
+
             return true;
         }
     }
