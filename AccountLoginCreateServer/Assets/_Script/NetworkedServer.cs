@@ -134,7 +134,9 @@ public class NetworkedServer : MonoBehaviour
         {
             result = string.Format(",{0}", roomManager.SyncUp(id, data[1]));
         }
-        SendMessageToClient(reply + result, id);
+        SendMessageToClient("1," + reply + result, id);
     }
+
+
 
 }

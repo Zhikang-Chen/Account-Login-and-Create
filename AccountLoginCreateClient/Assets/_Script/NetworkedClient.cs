@@ -84,6 +84,10 @@ public class NetworkedClient : MonoBehaviour
                     break;
             }
         }
+        else
+        {
+            Connect();
+        }
     }
 
     static private void Connect()
@@ -127,87 +131,115 @@ public class NetworkedClient : MonoBehaviour
         NetworkTransport.Disconnect(hostID, connectionID, out error);
     }
 
+
+    //Move everything below to another class
+
     static public void SendMessageToHost(string msg)
     {
         byte[] buffer = Encoding.Unicode.GetBytes(msg);
         NetworkTransport.Send(hostID, connectionID, reliableChannelID, buffer, msg.Length * sizeof(char), out error);
     }
 
-
-
     static public void ProcessRecievedMsg(string msg, int id)
     {
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
         string[] data = msg.Split(',');
 
+        int type = int.Parse(data[0]);
+        MessageType messagetype = (MessageType)type;
+
         //Message from server
-        if (data[0] == "S")
+        if (messagetype == MessageType.Message)
         {
-            if (data[1] == "0")
-            {
-                //Start game
-                GameroomUI.OnStart.Invoke();
-            }
-            else if (data[1] == "1")
-            {
-                //End game
-                GameroomUI.OnEnd.Invoke();
-            }
-            else if (data[1] == "2")
-            {
-                //Update grid
-                GridScript.UpdateGridAction(bool.Parse(data[2]), int.Parse(data[3]), int.Parse(data[4]));
-            }
-            else if (data[1] == "3")
-            {
-                //Gameover
-                //bool.Parse(data[2]);
-                GameUIScript.OnGameover.Invoke(bool.Parse(data[2]));
-            }
-            else if (data[1] == "4")
-            {
-                //Messages
-                //GameUIScript.OnGameover.Invoke()
-                GameUIScript.OnGetMessageEvent.Invoke(data[2]);
-            }
-            else if (data[1] == "5")
-            {
-                //Debug.Log(msg);
-                string[] actions = msg.Split("|");
+            int signifier = int.Parse(data[1]);
+            ServerToClientMessageSignifiers STCMS = (ServerToClientMessageSignifiers)signifier;
 
-                for (int i = 1; i < actions.Length - 1; i++)
-                {
-                    //Debug.Log(actions);
-                    string[] command = actions[i].Split("@");
-                    ProcessRecievedMsg(command[1], connectionID);
-                }
-            }
-            else if (data[1] == "6")
+            switch (STCMS)
             {
-                //string[] actions = msg.Split("|");
+                case ServerToClientMessageSignifiers.StartGame:
+                    GameroomUI.OnStart.Invoke();
+                    break;
+                case ServerToClientMessageSignifiers.EndGame:
+                    GameroomUI.OnEnd.Invoke();
+                    break;
+                case ServerToClientMessageSignifiers.UpdateGride:
+                    GridScript.UpdateGridAction(bool.Parse(data[2]), int.Parse(data[3]), int.Parse(data[4]));
+                    break;
+                case ServerToClientMessageSignifiers.Gameover:
+                    GameUIScript.OnGameover.Invoke(bool.Parse(data[2]));
+                    break;
+                case ServerToClientMessageSignifiers.GetChatMessage:
+                    GameUIScript.OnGetMessageEvent.Invoke(data[2]);
+                    break;
+                case ServerToClientMessageSignifiers.SyncUp:
+                    string[] actions = msg.Split("|");
 
-                ReplayManager.SaveReplayFiles(GameUIScript.CurrentRoomName, msg);
-                //Save stuff from server
+                    for (int i = 1; i < actions.Length - 1; i++)
+                    {
+                        //Debug.Log(actions);
+                        string[] command = actions[i].Split("@");
+                        ProcessRecievedMsg(command[1], connectionID);
+                    }
+                    break;
+                case ServerToClientMessageSignifiers.SaveReplay:
+                    ReplayManager.SaveReplayFiles(GameUIScript.CurrentRoomName, msg);
+                    break;
+
+                default:
+                    Debug.LogWarning("Invaild Signifier");
+                    break;
             }
         }
-        //Reply from server 
-        if (data[0] == "0")
+        else if(messagetype == MessageType.Reply)
         {
-            bool successBool = bool.Parse(data[1]);
-            //UIManager.OnLogin(successBool);
-            LoginUIScript.OnLoginEvent.Invoke(successBool);
+            
+            int signifier = int.Parse(data[1]);
+            ServerToClientReplySignifiers STCRS = (ServerToClientReplySignifiers)signifier;
+            bool successBool = bool.Parse(data[2]);
+
+
+            switch (STCRS)
+            {
+                case ServerToClientReplySignifiers.Login:
+                    LoginUIScript.OnLoginEvent.Invoke(successBool);
+                    break;
+                case ServerToClientReplySignifiers.CreateAccount:
+                    LoginUIScript.OnAccountCreationEvent.Invoke(successBool);
+                    break;
+                case ServerToClientReplySignifiers.RoomSearch:
+                    GameroomSearchUIScript.JoinRoom(successBool);
+                    break;
+                default:
+                    Debug.LogWarning("Invaild Signifier");
+                    break;
+            }
         }
-        else if (data[0] == "1")
-        {
-            bool successBool = bool.Parse(data[1]);
-            //UIManager.OnAccountCreation(successBool);
-            LoginUIScript.OnAccountCreationEvent.Invoke(successBool);
-        }
-        else if (data[0] == "2")
-        {
-            bool successBool = bool.Parse(data[1]);
-            GameroomSearchUIScript.JoinRoom(successBool);
-        }
+    }
+
+
+
+    enum ServerToClientMessageSignifiers
+    {
+        StartGame = 0,
+        EndGame = 1,
+        UpdateGride = 2,
+        Gameover = 3,
+        GetChatMessage = 4,
+        SyncUp = 5,
+        SaveReplay = 6
+    }
+
+    enum ServerToClientReplySignifiers
+    {
+        Login = 0,
+        CreateAccount = 1,
+        RoomSearch = 2,
+    }
+
+    enum MessageType
+    {
+        Message = 0,
+        Reply = 1
     }
 
     static public bool IsConnected()
