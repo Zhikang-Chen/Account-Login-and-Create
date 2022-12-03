@@ -158,6 +158,7 @@ public class GameroomManager : MonoBehaviour
         {
             bool result = false;
             string address = "0,2";
+
             string message = string.Format(",{0},{1},{2}", CurrentGame.IsPlayer1Turn, row, col);
             if (Player1 == id && CurrentGame.IsPlayer1Turn)
             {
@@ -314,7 +315,7 @@ public class GameroomManager : MonoBehaviour
                     data.Players.Add(id);
 
                     //data.Recording;
-                    string address = "0,5,|";
+                    //string address = "0,5,|";
                     StartGame(id, data);
                     //NetworkedServer.SendMessageToClient(address+data.Recording, id);
 
@@ -333,16 +334,20 @@ public class GameroomManager : MonoBehaviour
 
     public void EndGame(int id, GameroomData room)
     {
-        string address = "0,1";
-        NetworkedServer.SendMessageToClient(address, id);
+        //string address = "0,1";
+        //NetworkedServer.SendMessageToClient(address, id);
+
+        NetworkedServer.SendMessageToClient(NetworkedServerProcess.MessageType.Message,
+                                            NetworkedServerProcess.ServerToClientMessageSignifiers.EndGame, id);
     }
 
     public void StartGame(int id, GameroomData room)
     {
         room.CurrentGame = new Game(room);
-        string address = "0,0";
-        string msg = true.ToString();
-        NetworkedServer.SendMessageToClient(address, id);
+        //string address = "0,0";
+        //string msg = true.ToString();
+        NetworkedServer.SendMessageToClient(NetworkedServerProcess.MessageType.Message,
+                                            NetworkedServerProcess.ServerToClientMessageSignifiers.StartGame ,id);
     }
 
     // THIS IS ACTUALLY CAUSING ME ACTUAL PAIN
@@ -379,7 +384,8 @@ public class GameroomManager : MonoBehaviour
             {
                 if (id != data.Player1 && id != data.Player2)
                 {
-                    string address = "0,5,|";
+                    string address = (int)NetworkedServerProcess.MessageType.Message + 
+                        (int)NetworkedServerProcess.ServerToClientMessageSignifiers.SyncUp + ",|";
                     NetworkedServer.SendMessageToClient(address + data.Recording, id);
                     return true;
                 }

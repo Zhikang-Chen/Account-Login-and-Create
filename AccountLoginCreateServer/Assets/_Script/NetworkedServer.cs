@@ -34,14 +34,14 @@ public class NetworkedServer : MonoBehaviour
     }
 
 
-    PlayerDataManager playerDataManager;
-    GameroomManager roomManager;
+    static public PlayerDataManager playerDataManager;
+    static public GameroomManager roomManager;
 
     static public int maxConnections = 1000;
-    static int reliableChannelID;
-    static int unreliableChannelID;
-    static int hostID;
-    static int socketPort = 5491;
+    static public int reliableChannelID;
+    static public int unreliableChannelID;
+    static public int hostID;
+    static public int socketPort = 5491;
 
     // Start is called before the first frame update
     void Start()
@@ -78,7 +78,7 @@ public class NetworkedServer : MonoBehaviour
                 break;
             case NetworkEventType.DataEvent:
                 string msg = Encoding.Unicode.GetString(recBuffer, 0, dataSize);
-                ProcessRecievedMsg(msg, recConnectionID);
+                NetworkedServerProcess.ProcessRecievedMsg(msg, recConnectionID);
                 break;
             case NetworkEventType.DisconnectEvent:
                 roomManager.OnPlayerLeave(recConnectionID);
@@ -92,51 +92,23 @@ public class NetworkedServer : MonoBehaviour
     {
         byte error = 0;
         byte[] buffer = Encoding.Unicode.GetBytes(msg);
-        NetworkTransport.Send(hostID, id, reliableChannelID, buffer, msg.Length * sizeof(char), out error);
+        NetworkTransport.Send(NetworkedServer.hostID, id, NetworkedServer.reliableChannelID, buffer, msg.Length * sizeof(char), out error);
     }
 
-    private void ProcessRecievedMsg(string msg, int id)
+    static public void SendMessageToClient(NetworkedServerProcess.MessageType type, NetworkedServerProcess.ServerToClientMessageSignifiers signifier, string msg, int id)
     {
-        //Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
-        string[] data = msg.Split(',');
-        //SendMessageToClient("Data recieved", id);
-        string reply = data[0];
-        string result = "-1";
-        if (data[0] == "0")
-        {
-            //Login 
-            result = string.Format(",{0}", playerDataManager.PlayerLogin(id, data[1], data[2]).ToString());
-        }
-        else if (data[0] == "1")
-        {
-            //Create account
-            result = string.Format(",{0}", playerDataManager.CreateNewAccount(id, data[1], data[2]).ToString());
-        }
-        else if (data[0] == "2")
-        {
-            //Create game room or find game room
-            result = string.Format(",{0}", roomManager.CheckForGameroom(id, data[1]));
-        }
-        else if(data[0] == "3")
-        {
-            roomManager.OnPlayerLeave(id);
-            result = string.Format(",{0}", true);
-        }
-        else if (data[0] == "4")
-        {
-            result = string.Format(",{0}", roomManager.OnPlayerAction(id, data[1], int.Parse(data[2]), int.Parse(data[3])));
-        }
-        else if(data[0] == "5")
-        {
-            result = string.Format(",{0}", roomManager.OnPlayerMessage(id, data[1], data[2]));
-        }
-        else if(data[0] == "6")
-        {
-            result = string.Format(",{0}", roomManager.SyncUp(id, data[1]));
-        }
-        SendMessageToClient("1," + reply + result, id);
+        string fullMsg = ((int)type).ToString() + "," + ((int)signifier).ToString() + "," + msg;
+        byte error = 0;
+        byte[] buffer = Encoding.Unicode.GetBytes(fullMsg);
+        NetworkTransport.Send(NetworkedServer.hostID, id, NetworkedServer.reliableChannelID, buffer, fullMsg.Length * sizeof(char), out error);
     }
 
-
+    static public void SendMessageToClient(NetworkedServerProcess.MessageType type, NetworkedServerProcess.ServerToClientMessageSignifiers signifier, int id)
+    {
+        string fullMsg = ((int)type).ToString() + "," + ((int)signifier).ToString();
+        byte error = 0;
+        byte[] buffer = Encoding.Unicode.GetBytes(fullMsg);
+        NetworkTransport.Send(NetworkedServer.hostID, id, NetworkedServer.reliableChannelID, buffer, fullMsg.Length * sizeof(char), out error);
+    }
 
 }

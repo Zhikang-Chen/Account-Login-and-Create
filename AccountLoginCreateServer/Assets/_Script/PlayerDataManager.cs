@@ -53,7 +53,6 @@ public class PlayerDataManager : MonoBehaviour
         //No way to check is the user has already login
         //or check if the connection id has been in use
 
-
         for (int i = 0; i < User.Count; i++)
         {
             if (Password[i] == pass)
