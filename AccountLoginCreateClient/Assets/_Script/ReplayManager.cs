@@ -58,7 +58,7 @@ public class ReplayManager : MonoBehaviour
             {
                 var data = line.Split("@");
                 yield return new WaitForSeconds(float.Parse(data[0]));
-                NetworkedClient.ProcessRecievedMsg(data[1], NetworkedClient.connectionID);
+                NetworkedClientProcess.ProcessRecievedMsg(data[1], NetworkedClient.connectionID);
                 line = sr.ReadLine();
             }
         }

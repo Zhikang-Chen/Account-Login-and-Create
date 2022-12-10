@@ -80,6 +80,7 @@ public class GameroomManager : MonoBehaviour
             }
             //Need condition for tie
         }
+
         public bool OnPlayerAction(int row, int col)
         {
             if (PositionData[row][col] == State.Empty)
@@ -106,7 +107,7 @@ public class GameroomManager : MonoBehaviour
 
         public void OnGameover(State winnter)
         {
-            string address = "S,3,";
+            string address = "0,3,";
             switch (winnter)
             {
                 case State.Empty:
@@ -156,7 +157,8 @@ public class GameroomManager : MonoBehaviour
         public bool OnPlayerAction(int id, int row, int col)
         {
             bool result = false;
-            string address = "S,2";
+            string address = "0,2";
+
             string message = string.Format(",{0},{1},{2}", CurrentGame.IsPlayer1Turn, row, col);
             if (Player1 == id && CurrentGame.IsPlayer1Turn)
             {
@@ -193,7 +195,7 @@ public class GameroomManager : MonoBehaviour
 
         public bool Message(int id, string message)
         {
-            string address = "S,4,";
+            string address = "0,4,";
             string msg = message;
             NetworkedServer.SendMessageToClient(address + msg, Player1);
             NetworkedServer.SendMessageToClient(address + msg, Player2);
@@ -214,7 +216,7 @@ public class GameroomManager : MonoBehaviour
 
         public bool SendReplay()
         {
-            string address = "S,6,|";
+            string address = "0,6,|";
             NetworkedServer.SendMessageToClient(address + Recording, Player1);
             NetworkedServer.SendMessageToClient(address + Recording, Player2);
 
@@ -313,7 +315,7 @@ public class GameroomManager : MonoBehaviour
                     data.Players.Add(id);
 
                     //data.Recording;
-                    string address = "S,5,|";
+                    //string address = "0,5,|";
                     StartGame(id, data);
                     //NetworkedServer.SendMessageToClient(address+data.Recording, id);
 
@@ -332,16 +334,20 @@ public class GameroomManager : MonoBehaviour
 
     public void EndGame(int id, GameroomData room)
     {
-        string address = "S,1";
-        NetworkedServer.SendMessageToClient(address, id);
+        //string address = "0,1";
+        //NetworkedServer.SendMessageToClient(address, id);
+
+        NetworkedServer.SendMessageToClient(NetworkedServerProcess.MessageType.Message,
+                                            NetworkedServerProcess.ServerToClientMessageSignifiers.EndGame, id);
     }
 
     public void StartGame(int id, GameroomData room)
     {
         room.CurrentGame = new Game(room);
-        string address = "S,0";
-        string msg = true.ToString();
-        NetworkedServer.SendMessageToClient(address, id);
+        //string address = "0,0";
+        //string msg = true.ToString();
+        NetworkedServer.SendMessageToClient(NetworkedServerProcess.MessageType.Message,
+                                            NetworkedServerProcess.ServerToClientMessageSignifiers.StartGame ,id);
     }
 
     // THIS IS ACTUALLY CAUSING ME ACTUAL PAIN
@@ -378,7 +384,8 @@ public class GameroomManager : MonoBehaviour
             {
                 if (id != data.Player1 && id != data.Player2)
                 {
-                    string address = "S,5,|";
+                    string address = (int)NetworkedServerProcess.MessageType.Message + 
+                        (int)NetworkedServerProcess.ServerToClientMessageSignifiers.SyncUp + ",|";
                     NetworkedServer.SendMessageToClient(address + data.Recording, id);
                     return true;
                 }
